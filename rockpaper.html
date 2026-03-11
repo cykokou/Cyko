@@ -1,500 +1,317 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>包剪泵 · 经典手势对决</title>
+    <title>Rock Paper Scissors - 剪刀石頭布</title>
     <style>
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-
+        
         body {
-            background: linear-gradient(145deg, #1b3b4f 0%, #1e4a5f 100%);
-            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #0f3460);
+            color: white;
             min-height: 100vh;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            margin: 0;
-            padding: 1.5rem;
+            justify-content: center;
+            padding: 20px;
         }
-
-        .game-container {
-            max-width: 820px;
+        
+        .container {
+            max-width: 800px;
             width: 100%;
-            background: rgba(255, 248, 235, 0.9);
-            backdrop-filter: blur(4px);
-            border-radius: 64px 64px 48px 48px;
-            box-shadow: 0 25px 40px -10px rgba(0, 20, 30, 0.5);
-            padding: 2rem 2rem 2.5rem;
-            border: 2px solid #ffeacd;
-        }
-
-        .header {
             text-align: center;
-            margin-bottom: 1.8rem;
         }
-
-        .header h1 {
-            font-size: 2.8rem;
-            font-weight: 700;
-            letter-spacing: 8px;
-            color: #2d3e4b;
-            text-shadow: 3px 3px 0 #fddfb5;
-            word-break: break-word;
+        
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #ff7e5f, #feb47b);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
         }
-
-        .subhead {
-            font-size: 1.3rem;
-            background: #2e5a6e;
-            color: #fef9ea;
-            display: inline-block;
-            padding: 0.4rem 2rem;
-            border-radius: 60px;
-            margin-top: 0.3rem;
-            font-weight: 600;
-            box-shadow: inset 0 -3px 0 #1d3e4b;
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #aaa;
+            margin-bottom: 30px;
         }
-
-        /* 競技場 — 選手與裁判 */
-        .arena {
+        
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .choices {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .choice-btn {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+        }
+        
+        .choice-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: scale(1.05);
+        }
+        
+        .choice-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .result-area {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 2.5rem;
-            flex-wrap: wrap;
-        }
-
-        .player-area, .computer-area {
-            background: #fcf3e0;
-            border-radius: 48px;
-            padding: 1.8rem 1.2rem;
-            box-shadow: inset 0 -6px 0 #d4b58c, inset 0 2px 10px rgba(94, 67, 30, 0.1);
-            flex: 1 1 200px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            border: 3px solid #ffe3b2;
-        }
-
-        .badge {
-            font-size: 1.2rem;
-            background: #4e3e30;
-            color: #ffefcf;
-            padding: 0.3rem 1.2rem;
-            border-radius: 50px;
-            margin-bottom: 0.8rem;
-            font-weight: 600;
-            letter-spacing: 2px;
-        }
-
-        .gesture-box {
-            font-size: 6rem;
-            line-height: 1.2;
-            background: white;
             width: 100%;
-            text-align: center;
-            padding: 0.5rem 0;
-            border-radius: 100px;
-            box-shadow: 0 8px 0 #b28b6f, 0 10px 20px rgba(0,0,0,0.2);
-            border: 2px solid #a1805e;
-            margin-bottom: 0.3rem;
-            transition: all 0.1s ease;
-            min-height: 130px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            max-width: 600px;
+            margin-top: 20px;
         }
-
-        .vs-divider {
-            font-size: 3.5rem;
-            font-weight: 800;
-            background: #c1432e;
-            color: #ffd98c;
-            text-shadow: 4px 4px 0 #641e1e;
-            padding: 0.2rem 0.8rem;
-            border-radius: 80px;
-            rotate: -5deg;
-            border: 3px solid #ffb26e;
-            box-shadow: 0 10px 0 #4f1a1a;
-            line-height: 1;
-            margin: 0 0.2rem;
-        }
-
-        /* 計分板 */
-        .score-panel {
-            display: flex;
-            justify-content: space-around;
-            background: #293841;
-            border-radius: 80px;
-            padding: 1rem 1.5rem;
-            margin: 1.5rem 0 2rem;
-            color: #fbffd2;
-            border: 3px solid #ffcf9a;
-            font-weight: bold;
-            flex-wrap: wrap;
-        }
-
-        .score-item {
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-            font-size: 1.5rem;
-            background: #1f2c33;
-            padding: 0.3rem 1.2rem;
-            border-radius: 60px;
-            box-shadow: inset 0 2px 5px #0f1519;
-        }
-
-        .score-number {
-            background: #f9c49a;
-            color: #1f2c33;
-            padding: 0.2rem 0.9rem;
-            border-radius: 50px;
-            font-size: 2rem;
-            font-weight: 800;
-            line-height: 1;
-        }
-
-        /* 結果區 — 動態訊息 */
-        .result-area {
-            background: #5a4c3a;
-            border-radius: 60px;
-            padding: 1.2rem 2rem;
-            margin-bottom: 2.5rem;
-            text-align: center;
-            font-size: 1.7rem;
-            font-weight: 700;
-            color: #fbe8c9;
-            border: 3px solid #e3b27c;
-            box-shadow: inset 0 -4px 0 #3a2e22, 0 8px 0 #34281e;
-            letter-spacing: 2px;
-            min-height: 86px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* 武器庫 — 按鈕 */
-        .weapon-panel {
-            display: flex;
-            justify-content: center;
-            gap: 1.8rem;
-            flex-wrap: wrap;
-            margin-top: 0.6rem;
-        }
-
-        .weapon-btn {
-            background: #ffcf96;
-            border: none;
-            font-size: 3.2rem;
-            padding: 0.5rem 1rem 0.2rem;
-            border-radius: 40px;
-            cursor: pointer;
-            transition: all 0.1s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-            border-bottom: 12px solid #b47d4b;
-            border-right: 6px solid #a06d3e;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        
+        .player, .computer {
             display: flex;
             flex-direction: column;
             align-items: center;
-            line-height: 1;
-            flex: 0 1 auto;
+            gap: 15px;
         }
-
-        .weapon-btn span {
-            font-size: 0.9rem;
-            background: #4a3729;
-            color: #ffe8b5;
-            padding: 0.2rem 0.9rem;
-            border-radius: 60px;
-            margin-top: 0.2rem;
-            margin-bottom: 0.2rem;
-            font-weight: 600;
-            letter-spacing: 2px;
-        }
-
-        .weapon-btn:hover {
-            transform: translateY(-8px);
-            border-bottom-width: 16px;
-            background: #ffe1a4;
-        }
-
-        .weapon-btn:active {
-            transform: translateY(6px);
-            border-bottom-width: 6px;
-            border-right-width: 3px;
-        }
-
-        .reset-btn {
-            background: #6d8a7e;
-            border: none;
-            font-size: 1.5rem;
-            padding: 0.6rem 2rem;
-            border-radius: 50px;
-            color: white;
-            font-weight: 700;
-            border-bottom: 8px solid #3a554a;
-            letter-spacing: 6px;
-            transition: 0.07s;
-            margin-top: 1.8rem;
-            cursor: pointer;
-            box-shadow: 0 5px 15px #1e2e2a;
-            display: inline-flex;
+        
+        .choice-display {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
             align-items: center;
-            gap: 0.5rem;
+            justify-content: center;
+            font-size: 5rem;
         }
-
-        .reset-btn:hover {
-            background: #5f7c70;
-            border-bottom-width: 4px;
-            transform: translateY(4px);
+        
+        .vs {
+            display: flex;
+            align-items: center;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ff7e5f;
         }
-
-        .footer {
+        
+        .score-board {
             display: flex;
             justify-content: center;
+            gap: 40px;
+            margin-top: 30px;
+            font-size: 1.5rem;
         }
-
-        /* 手機微調 */
-        @media (max-width: 640px) {
-            .game-container { padding: 1.5rem; }
-            .gesture-box { font-size: 4.5rem; }
-            .vs-divider { font-size: 2.4rem; }
-            .header h1 { font-size: 2rem; }
+        
+        .score {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #4cc9f0;
+        }
+        
+        .message {
+            font-size: 1.8rem;
+            margin-top: 20px;
+            min-height: 60px;
+            color: #feb47b;
+        }
+        
+        .controls {
+            margin-top: 30px;
+        }
+        
+        button {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(90deg, #4cc9f0, #2a9d8f);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .choices {
+                gap: 10px;
+            }
+            .choice-btn {
+                width: 100px;
+                height: 100px;
+                font-size: 3rem;
+            }
+            .choice-display {
+                width: 120px;
+                height: 120px;
+                font-size: 4rem;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="game-container">
-        <!-- 標頭：包剪泵 -->
-        <div class="header">
-            <h1>✋✂️🧻 包剪泵</h1>
-            <div class="subhead">經典·三生萬物</div>
-        </div>
-
-        <!-- 主要對戰區 玩家 vs 電腦 -->
-        <div class="arena">
-            <!-- 玩家區 -->
-            <div class="player-area">
-                <div class="badge">👤 你</div>
-                <div id="playerGesture" class="gesture-box">🤚</div>
-                <div style="font-size: 1.3rem; margin-top: 0.4rem; color: #3f2d1d;">包剪泵</div>
+    <div class="container">
+        <a href="index.html" style="position: absolute; top: 20px; left: 20px; color: #ff7e5f; text-decoration: none; font-size: 1rem; display: flex; align-items: center; gap: 5px;">
+            ← 返回首頁
+        </a>
+        <h1>剪刀石頭布</h1>
+        <p class="subtitle">挑戰電腦，三戰兩勝！</p>
+        
+        <div class="game-area">
+            <div class="choices">
+                <button class="choice-btn" data-choice="rock">✊</button>
+                <button class="choice-btn" data-choice="paper">✋</button>
+                <button class="choice-btn" data-choice="scissors">✌️</button>
             </div>
-
-            <!-- 磅礡 VS 字樣 -->
-            <div class="vs-divider">VS</div>
-
-            <!-- 電腦區 -->
-            <div class="computer-area">
-                <div class="badge">💻 泵</div>
-                <div id="computerGesture" class="gesture-box">🧻</div>
-                <div style="font-size: 1.3rem; margin-top: 0.4rem; color: #3f2d1d;">隨機應變</div>
+            
+            <div class="result-area">
+                <div class="player">
+                    <h3>你</h3>
+                    <div class="choice-display" id="player-choice">?</div>
+                </div>
+                <div class="vs">VS</div>
+                <div class="computer">
+                    <h3>電腦</h3>
+                    <div class="choice-display" id="computer-choice">?</div>
+                </div>
             </div>
-        </div>
-
-        <!-- 計分板 : 玩家分數 / 電腦分數 -->
-        <div class="score-panel">
-            <div class="score-item">🏆 玩家 <span id="playerScoreDisplay" class="score-number">0</span></div>
-            <div class="score-item">💻 電腦 <span id="computerScoreDisplay" class="score-number">0</span></div>
-        </div>
-
-        <!-- 即時對局結果 -->
-        <div id="resultMessage" class="result-area">⚔️ 點擊手勢出招 ⚔️</div>
-
-        <!-- 出拳武器庫：包 剪 泵 (布、剪刀、石頭) -->
-        <div class="weapon-panel">
-            <button id="rock" class="weapon-btn">
-                ✊ <span>泵</span>
-            </button>
-            <button id="paper" class="weapon-btn">
-                🤚 <span>包</span>
-            </button>
-            <button id="scissors" class="weapon-btn">
-                ✂️ <span>剪</span>
-            </button>
-        </div>
-
-        <!-- 重置／清空比分 -->
-        <div class="footer">
-            <button id="resetGame" class="reset-btn">
-                🔄 重新泵局
-            </button>
+            
+            <div class="score-board">
+                <div>
+                    <div class="score" id="player-score">0</div>
+                    <div>你的分數</div>
+                </div>
+                <div>
+                    <div class="score" id="computer-score">0</div>
+                    <div>電腦分數</div>
+                </div>
+            </div>
+            
+            <div class="message" id="message">選擇一個選項開始遊戲！</div>
+            
+            <div class="controls">
+                <button id="reset-btn">重新開始</button>
+            </div>
         </div>
     </div>
 
     <script>
-        (function() {
-            "use strict";
-
-            // ---------- 包剪泵 規則映射 ----------
-            const GESTURES = {
-                ROCK: 'rock',
-                PAPER: 'paper',
-                SCISSORS: 'scissors'
-            };
-
-            // 對應顯示表情符號與中文名稱(備用)
-            const ICON_MAP = {
-                [GESTURES.ROCK]: '✊',
-                [GESTURES.PAPER]: '🤚',
-                [GESTURES.SCISSORS]: '✂️'
-            };
-
-            // 贏的邏輯定義： key 是玩家手勢， value 是能打敗的對手手勢
-            const WIN_RULES = {
-                [GESTURES.ROCK]: GESTURES.SCISSORS,     // 泵 贏 剪
-                [GESTURES.PAPER]: GESTURES.ROCK,        // 包 贏 泵
-                [GESTURES.SCISSORS]: GESTURES.PAPER     // 剪 贏 包
-            };
-
-            // ---------- DOM 元素 ----------
-            const playerGestureEl = document.getElementById('playerGesture');
-            const computerGestureEl = document.getElementById('computerGesture');
-            const playerScoreEl = document.getElementById('playerScoreDisplay');
-            const computerScoreEl = document.getElementById('computerScoreDisplay');
-            const resultMessageEl = document.getElementById('resultMessage');
-
-            // 按鈕
-            const rockBtn = document.getElementById('rock');
-            const paperBtn = document.getElementById('paper');
-            const scissorsBtn = document.getElementById('scissors');
-            const resetBtn = document.getElementById('resetGame');
-
-            // ---------- 狀態 ----------
-            let playerScore = 0;
-            let computerScore = 0;
-            let currentPlayerGesture = GESTURES.PAPER;    // 初始顯示 "包" 🤚
-            let currentComputerGesture = GESTURES.ROCK;   // 初始顯示 "泵" ✊
-
-            // ---------- 輔助函數：亂數手勢 ----------
-            function getRandomGesture() {
-                const keys = Object.values(GESTURES);
-                const randomIndex = Math.floor(Math.random() * keys.length);
-                return keys[randomIndex];
+        const choices = ['rock', 'paper', 'scissors'];
+        const emojis = {
+            rock: '✊',
+            paper: '✋',
+            scissors: '✌️'
+        };
+        
+        let playerScore = 0;
+        let computerScore = 0;
+        let round = 0;
+        
+        const playerChoiceDisplay = document.getElementById('player-choice');
+        const computerChoiceDisplay = document.getElementById('computer-choice');
+        const playerScoreDisplay = document.getElementById('player-score');
+        const computerScoreDisplay = document.getElementById('computer-score');
+        const messageDisplay = document.getElementById('message');
+        const choiceButtons = document.querySelectorAll('.choice-btn');
+        const resetButton = document.getElementById('reset-btn');
+        
+        function getComputerChoice() {
+            const randomIndex = Math.floor(Math.random() * 3);
+            return choices[randomIndex];
+        }
+        
+        function determineWinner(player, computer) {
+            if (player === computer) return 'draw';
+            if (
+                (player === 'rock' && computer === 'scissors') ||
+                (player === 'paper' && computer === 'rock') ||
+                (player === 'scissors' && computer === 'paper')
+            ) {
+                return 'player';
             }
-
-            // ---------- 判定勝負：回傳 'win', 'lose', 'draw' ----------
-            function determineOutcome(player, computer) {
-                if (player === computer) {
-                    return 'draw';
-                }
-                // 如果玩家手勢能打敗電腦手勢 -> 玩家贏
-                if (WIN_RULES[player] === computer) {
-                    return 'win';
-                }
-                return 'lose';
+            return 'computer';
+        }
+        
+        function updateDisplay(playerChoice, computerChoice, winner) {
+            playerChoiceDisplay.textContent = emojis[playerChoice];
+            computerChoiceDisplay.textContent = emojis[computerChoice];
+            
+            if (winner === 'player') {
+                messageDisplay.textContent = '你贏了！';
+                messageDisplay.style.color = '#4cc9f0';
+                playerScore++;
+            } else if (winner === 'computer') {
+                messageDisplay.textContent = '電腦贏了！';
+                messageDisplay.style.color = '#ff7e5f';
+                computerScore++;
+            } else {
+                messageDisplay.textContent = '平手！';
+                messageDisplay.style.color = '#feb47b';
             }
-
-            // ---------- 更新UI：手勢、比分、結果訊息 ----------
-            function updateUI(playerGesture, computerGesture, outcome = null) {
-                // 1. 更新手勢圖標
-                playerGestureEl.textContent = ICON_MAP[playerGesture];
-                computerGestureEl.textContent = ICON_MAP[computerGesture];
-
-                // 2. 若outcome有傳入，根據結果更新比分與訊息
-                if (outcome) {
-                    let message = '';
-                    switch (outcome) {
-                        case 'win':
-                            playerScore += 1;
-                            message = `🎉 你贏了！ ${ICON_MAP[playerGesture]} 勝 ${ICON_MAP[computerGesture]} 🎉`;
-                            break;
-                        case 'lose':
-                            computerScore += 1;
-                            message = `💔 電腦贏了！ ${ICON_MAP[computerGesture]} 勝 ${ICON_MAP[playerGesture]} 💔`;
-                            break;
-                        case 'draw':
-                            message = `🤝 平局！ 都是 ${ICON_MAP[playerGesture]} ～ 再來一局 🤝`;
-                            break;
-                        default: break;
-                    }
-                    // 更新計分板
-                    playerScoreEl.textContent = playerScore;
-                    computerScoreEl.textContent = computerScore;
-                    // 顯示戰鬥結果
-                    resultMessageEl.textContent = message;
-                } else {
-                    // 初始或重置時顯示歡迎語 (僅手勢更新，不比分)
-                }
+            
+            playerScoreDisplay.textContent = playerScore;
+            computerScoreDisplay.textContent = computerScore;
+            
+            // Check for game over (best of 3)
+            if (playerScore >= 2 || computerScore >= 2) {
+                const finalMessage = playerScore >= 2 ? '恭喜！你贏得了比賽！' : '電腦贏得了比賽！再試一次！';
+                messageDisplay.textContent = finalMessage;
+                choiceButtons.forEach(btn => btn.disabled = true);
             }
-
-            // ---------- 主要遊戲流程：玩家選擇手勢後，電腦隨機，判定，重繪--------
-            function playRound(playerChoice) {
-                // 1. 電腦隨機出手
-                const computerChoice = getRandomGesture();
-
-                // 2. 判定輸贏
-                const result = determineOutcome(playerChoice, computerChoice);
-
-                // 3. 更新當前手勢狀態 (用於顯示)
-                currentPlayerGesture = playerChoice;
-                currentComputerGesture = computerChoice;
-
-                // 4. 畫面渲染 (自動增加分數、訊息)
-                updateUI(currentPlayerGesture, currentComputerGesture, result);
-            }
-
-            // ---------- 重置遊戲 (比分歸零，手勢回到預設) ----------
-            function resetGame() {
-                playerScore = 0;
-                computerScore = 0;
-                // 預設展示: 玩家「包」🤚 , 電腦「泵」✊ 
-                currentPlayerGesture = GESTURES.PAPER;    // 包
-                currentComputerGesture = GESTURES.ROCK;   // 泵
-
-                // 更新顯示，不帶結果參數 (不改變比分)
-                playerGestureEl.textContent = ICON_MAP[currentPlayerGesture];
-                computerGestureEl.textContent = ICON_MAP[currentComputerGesture];
-                playerScoreEl.textContent = playerScore;
-                computerScoreEl.textContent = computerScore;
-                resultMessageEl.textContent = '🔄 重新泵局！ 來吧 🔄';
-            }
-
-            // ---------- 初始設定 or 確保顯示一致性 ----------
-            function initialDisplay() {
-                // 保證啟動時畫面與變數同步 (玩家:包，電腦:泵)
-                playerGestureEl.textContent = ICON_MAP[currentPlayerGesture];
-                computerGestureEl.textContent = ICON_MAP[currentComputerGesture];
-                playerScoreEl.textContent = playerScore;
-                computerScoreEl.textContent = computerScore;
-                resultMessageEl.textContent = '⚔️ 點擊手勢出招 ⚔️';
-            }
-
-            // ---------- 監聽事件 ----------
-            // 石頭(泵)
-            rockBtn.addEventListener('click', function() {
-                playRound(GESTURES.ROCK);
+        }
+        
+        choiceButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                if (playerScore >= 2 || computerScore >= 2) return;
+                
+                const playerChoice = button.dataset.choice;
+                const computerChoice = getComputerChoice();
+                const winner = determineWinner(playerChoice, computerChoice);
+                updateDisplay(playerChoice, computerChoice, winner);
             });
-            // 布(包)
-            paperBtn.addEventListener('click', function() {
-                playRound(GESTURES.PAPER);
-            });
-            // 剪刀(剪)
-            scissorsBtn.addEventListener('click', function() {
-                playRound(GESTURES.SCISSORS);
-            });
-
-            // 重置按鈕
-            resetBtn.addEventListener('click', function() {
-                resetGame();
-            });
-
-            // 頁面載入時 套用初始顯示
-            initialDisplay();
-
-            // 額外彩蛋： 快速連打也不怕，每次獨立運算 (保留純函數風格)
-        })();
+        });
+        
+        resetButton.addEventListener('click', () => {
+            playerScore = 0;
+            computerScore = 0;
+            playerScoreDisplay.textContent = '0';
+            computerScoreDisplay.textContent = '0';
+            playerChoiceDisplay.textContent = '?';
+            computerChoiceDisplay.textContent = '?';
+            messageDisplay.textContent = '選擇一個選項開始遊戲！';
+            messageDisplay.style.color = '#feb47b';
+            choiceButtons.forEach(btn => btn.disabled = false);
+        });
     </script>
-
-    <!-- 
-        包 · 剪 · 泵 
-        正宗石頭剪刀布 粵語/閩南語念力加持！
-        泵 = 石頭，包 = 布，剪 = 剪刀 
-    -->
 </body>
 </html>

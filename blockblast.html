@@ -1,1045 +1,874 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Block Blast - 方塊爆破遊戲</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-            color: #fff;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-            overflow-x: hidden;
-        }
-        
-        .container {
-            max-width: 1200px;
-            width: 100%;
-            margin: 0 auto;
-        }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 25px;
-            padding: 15px;
-            width: 100%;
-        }
-        
-        h1 {
-            font-size: 3.5rem;
-            margin-bottom: 10px;
-            background: linear-gradient(90deg, #ff7e5f, #feb47b, #86a8e7, #91eae4);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            text-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            letter-spacing: 2px;
-        }
-        
-        .subtitle {
-            font-size: 1.2rem;
-            color: #b0b0e0;
-            margin-bottom: 20px;
-        }
-        
-        .game-area {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-        
-        .game-board-container {
-            position: relative;
-        }
-        
-        #gameCanvas {
-            border-radius: 12px;
-            background-color: #1a1a2e;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            border: 3px solid #2a2a4a;
-        }
-        
-        .side-panel {
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
-            min-width: 280px;
-        }
-        
-        .stats-panel {
-            background: rgba(30, 30, 55, 0.85);
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(10px);
-            border: 2px solid #3a3a6a;
-        }
-        
-        .stats-title {
-            font-size: 1.5rem;
-            color: #86a8e7;
-            margin-bottom: 20px;
-            text-align: center;
-            padding-bottom: 10px;
-            border-bottom: 2px solid rgba(134, 168, 231, 0.3);
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-        
-        .stat-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 15px;
-            background: rgba(40, 40, 70, 0.6);
-            border-radius: 10px;
-            transition: all 0.3s ease;
-        }
-        
-        .stat-item:hover {
-            background: rgba(50, 50, 90, 0.8);
-            transform: translateY(-3px);
-        }
-        
-        .stat-value {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #ff7e5f;
-        }
-        
-        .stat-label {
-            font-size: 1rem;
-            color: #b0b0e0;
-            margin-top: 5px;
-        }
-        
-        .next-block-panel {
-            background: rgba(30, 30, 55, 0.85);
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(10px);
-            border: 2px solid #3a3a6a;
-            text-align: center;
-        }
-        
-        .next-block-title {
-            font-size: 1.5rem;
-            color: #91eae4;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid rgba(145, 234, 228, 0.3);
-        }
-        
-        #nextBlockCanvas {
-            background-color: #1a1a2e;
-            border-radius: 8px;
-            margin: 0 auto;
-            border: 2px solid #2a2a4a;
-        }
-        
-        .controls-panel {
-            background: rgba(30, 30, 55, 0.85);
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(10px);
-            border: 2px solid #3a3a6a;
-        }
-        
-        .controls-title {
-            font-size: 1.5rem;
-            color: #feb47b;
-            margin-bottom: 20px;
-            text-align: center;
-            padding-bottom: 10px;
-            border-bottom: 2px solid rgba(254, 180, 123, 0.3);
-        }
-        
-        .controls-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-        
-        .control-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 12px;
-            background: rgba(40, 40, 70, 0.6);
-            border-radius: 10px;
-        }
-        
-        .key {
-            display: inline-block;
-            padding: 8px 15px;
-            background: #2a2a4a;
-            border-radius: 8px;
-            font-weight: bold;
-            color: #ff7e5f;
-            margin-top: 5px;
-            border: 1px solid #3a3a6a;
-            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
-        }
-        
-        .action-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-top: 20px;
-        }
-        
-        .action-btn {
-            padding: 16px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-        }
-        
-        .action-btn i {
-            font-size: 1.3rem;
-        }
-        
-        #startBtn {
-            background: linear-gradient(90deg, #4CAF50, #2E7D32);
-        }
-        
-        #pauseBtn {
-            background: linear-gradient(90deg, #FF9800, #F57C00);
-        }
-        
-        #resetBtn {
-            background: linear-gradient(90deg, #f44336, #c62828);
-        }
-        
-        .action-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
-        
-        .action-btn:active {
-            transform: translateY(1px);
-        }
-        
-        .game-over {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(10, 10, 20, 0.9);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border-radius: 12px;
-            display: none;
-            z-index: 10;
-        }
-        
-        .game-over-content {
-            background: rgba(30, 30, 55, 0.95);
-            border-radius: 20px;
-            padding: 40px;
-            text-align: center;
-            max-width: 500px;
-            width: 90%;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
-            border: 3px solid #ff7e5f;
-        }
-        
-        .game-over-title {
-            font-size: 3rem;
-            color: #ff7e5f;
-            margin-bottom: 20px;
-        }
-        
-        .final-score {
-            font-size: 4rem;
-            color: #86a8e7;
-            margin: 20px 0;
-            font-weight: bold;
-        }
-        
-        .instructions {
-            background: rgba(30, 30, 55, 0.85);
-            border-radius: 15px;
-            padding: 25px;
-            margin-top: 20px;
-            max-width: 1000px;
-            margin-left: auto;
-            margin-right: auto;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(10px);
-            border: 2px solid #3a3a6a;
-        }
-        
-        .instructions-title {
-            font-size: 1.8rem;
-            color: #91eae4;
-            margin-bottom: 20px;
-            text-align: center;
-            padding-bottom: 10px;
-            border-bottom: 2px solid rgba(145, 234, 228, 0.3);
-        }
-        
-        .instructions-content {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-        }
-        
-        .instruction-item {
-            padding: 15px;
-            background: rgba(40, 40, 70, 0.6);
-            border-radius: 10px;
-            line-height: 1.6;
-        }
-        
-        .instruction-item i {
-            color: #feb47b;
-            margin-right: 10px;
-            font-size: 1.2rem;
-        }
-        
-        .block-types {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-        }
-        
-        .block-sample {
-            width: 40px;
-            height: 40px;
-            border-radius: 6px;
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
-        }
-        
-        .footer {
-            text-align: center;
-            padding: 25px 0;
-            color: #8a8ab5;
-            margin-top: 30px;
-            width: 100%;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .mobile-controls {
-            display: none;
-            grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: repeat(3, 1fr);
-            gap: 15px;
-            margin-top: 30px;
-            width: 300px;
-        }
-        
-        .mobile-btn {
-            width: 100%;
-            height: 80px;
-            font-size: 1.8rem;
-            background: rgba(60, 60, 100, 0.8);
-            border: none;
-            border-radius: 12px;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .mobile-btn:active {
-            background: rgba(80, 80, 130, 0.9);
-            transform: scale(0.95);
-        }
-        
-        .rotate-btn {
-            grid-column: 2;
-            grid-row: 1;
-        }
-        
-        .left-btn {
-            grid-column: 1;
-            grid-row: 2;
-        }
-        
-        .down-btn {
-            grid-column: 2;
-            grid-row: 2;
-        }
-        
-        .right-btn {
-            grid-column: 3;
-            grid-row: 2;
-        }
-        
-        .drop-btn {
-            grid-column: 2;
-            grid-row: 3;
-        }
-        
-        @media (max-width: 1100px) {
-            .game-area {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .side-panel {
-                flex-direction: row;
-                width: 100%;
-                max-width: 800px;
-                justify-content: space-between;
-            }
-            
-            .stats-panel, .next-block-panel, .controls-panel {
-                flex: 1;
-                min-width: auto;
-            }
-        }
-        
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 2.5rem;
-            }
-            
-            .subtitle {
-                font-size: 1rem;
-            }
-            
-            .side-panel {
-                flex-direction: column;
-            }
-            
-            .mobile-controls {
-                display: grid;
-            }
-            
-            #gameCanvas {
-                width: 300px;
-                height: 600px;
-            }
-            
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            #gameCanvas {
-                width: 280px;
-                height: 560px;
-            }
-            
-            .mobile-controls {
-                width: 280px;
-            }
-            
-            .mobile-btn {
-                height: 70px;
-            }
-        }
-        
-        /* 爆炸動畫 */
-        @keyframes explode {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.5); opacity: 0.7; }
-            100% { transform: scale(0); opacity: 0; }
-        }
-        
-        .exploding {
-            animation: explode 0.3s ease-out forwards;
-        }
-        
-        /* 連擊效果 */
-        @keyframes combo {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); }
-        }
-        
-        .combo-effect {
-            animation: combo 0.3s ease;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Block Blast</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #05080e;
+      --bg-card: #0c1018;
+      --fg: #e8eef4;
+      --muted: #6b7a8c;
+      --accent: #00ffe5;
+      --accent-glow: rgba(0, 255, 229, 0.25);
+      --border: #1a2332;
+      --cell-empty: #111822;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .font-display {
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    /* Background Effects */
+    .bg-pattern {
+      background-image: 
+        radial-gradient(circle at 20% 20%, rgba(0, 255, 229, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(255, 107, 53, 0.03) 0%, transparent 50%),
+        linear-gradient(rgba(0, 255, 229, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 255, 229, 0.02) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+    }
+
+    .glow-orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(100px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .orb-1 {
+      width: 500px;
+      height: 500px;
+      background: rgba(0, 255, 229, 0.12);
+      top: -150px;
+      right: -150px;
+    }
+
+    .orb-2 {
+      width: 400px;
+      height: 400px;
+      background: rgba(255, 107, 53, 0.08);
+      bottom: -100px;
+      left: -100px;
+    }
+
+    /* Game Grid */
+    .game-grid {
+      display: grid;
+      gap: 3px;
+      padding: 12px;
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 0 60px -20px var(--accent-glow);
+    }
+
+    .grid-cell {
+      width: 42px;
+      height: 42px;
+      background: var(--cell-empty);
+      border-radius: 6px;
+      transition: all 0.15s ease;
+      position: relative;
+    }
+
+    .grid-cell.preview {
+      background: rgba(0, 255, 229, 0.3);
+      box-shadow: inset 0 0 0 2px var(--accent);
+    }
+
+    .grid-cell.invalid {
+      background: rgba(255, 70, 70, 0.3);
+    }
+
+    .grid-cell.filled {
+      border-radius: 4px;
+      transform: scale(1);
+    }
+
+    .grid-cell.clearing {
+      animation: clearCell 0.4s ease forwards;
+    }
+
+    @keyframes clearCell {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.8; }
+      100% { transform: scale(0); opacity: 0; }
+    }
+
+    /* Pieces Tray */
+    .pieces-tray {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+      padding: 24px;
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+    }
+
+    .piece-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .game-piece {
+      display: grid;
+      gap: 2px;
+      padding: 8px;
+      background: rgba(0, 255, 229, 0.03);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      cursor: grab;
+      transition: all 0.3s ease;
+      user-select: none;
+    }
+
+    .game-piece:hover {
+      border-color: var(--accent);
+      background: rgba(0, 255, 229, 0.08);
+      transform: translateY(-4px);
+      box-shadow: 0 10px 30px -10px var(--accent-glow);
+    }
+
+    .game-piece.dragging {
+      opacity: 0.5;
+      cursor: grabbing;
+    }
+
+    .game-piece.disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .piece-cell {
+      width: 24px;
+      height: 24px;
+      border-radius: 3px;
+      transition: all 0.15s ease;
+    }
+
+    .piece-cell.filled {
+      box-shadow: inset 0 -2px 0 rgba(0,0,0,0.3), inset 0 2px 0 rgba(255,255,255,0.15);
+    }
+
+    .piece-cell.empty {
+      background: transparent;
+    }
+
+    /* Score Panel */
+    .score-panel {
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    .score-value {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 3rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--accent), #00c9b7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Combo Popup */
+    .combo-popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: var(--accent);
+      text-shadow: 0 0 30px var(--accent-glow);
+      pointer-events: none;
+      z-index: 100;
+      opacity: 0;
+    }
+
+    .combo-popup.show {
+      animation: comboShow 0.8s ease forwards;
+    }
+
+    @keyframes comboShow {
+      0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+      20% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+      80% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+    }
+
+    /* Game Over Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 8, 14, 0.9);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.4s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-content {
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      border-radius: 24px;
+      padding: 48px;
+      text-align: center;
+      transform: scale(0.9) translateY(20px);
+      transition: transform 0.4s ease;
+    }
+
+    .modal-overlay.active .modal-content {
+      transform: scale(1) translateY(0);
+    }
+
+    /* Button */
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #00c9b7);
+      color: var(--bg);
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600;
+      padding: 14px 32px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 1rem;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px -10px var(--accent);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--fg);
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 500;
+      padding: 12px 24px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .animate-in {
+      animation: fadeInUp 0.6s ease forwards;
+    }
+
+    .delay-1 { animation-delay: 0.1s; opacity: 0; }
+    .delay-2 { animation-delay: 0.2s; opacity: 0; }
+    .delay-3 { animation-delay: 0.3s; opacity: 0; }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .grid-cell {
+        width: 34px;
+        height: 34px;
+      }
+      .piece-cell {
+        width: 18px;
+        height: 18px;
+      }
+      .score-value {
+        font-size: 2rem;
+      }
+      .pieces-tray {
+        padding: 16px;
+        gap: 12px;
+      }
+    }
+
+    /* Reduced Motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
 </head>
-<body>
-    <div class="container">
-        <header class="header">
-            <h1>BLOCK BLAST</h1>
-            <p class="subtitle">排列、消除、爆破！挑戰你的反應極限</p>
-        </header>
-        
-        <main>
-            <div class="game-area">
-                <div class="game-board-container">
-                    <canvas id="gameCanvas" width="400" height="800"></canvas>
-                    
-                    <div class="game-over" id="gameOverScreen">
-                        <div class="game-over-content">
-                            <h2 class="game-over-title">遊戲結束!</h2>
-                            <div class="final-score" id="finalScore">0</div>
-                            <p>你的最高分: <span id="highScoreDisplay">0</span></p>
-                            <button class="action-btn" id="restartBtn">
-                                <i class="fas fa-redo"></i> 重新開始
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="side-panel">
-                    <div class="stats-panel">
-                        <h3 class="stats-title">遊戲統計</h3>
-                        <div class="stats-grid">
-                            <div class="stat-item">
-                                <div class="stat-value" id="score">0</div>
-                                <div class="stat-label">分數</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-value" id="level">1</div>
-                                <div class="stat-label">等級</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-value" id="lines">0</div>
-                                <div class="stat-label">消除行數</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-value" id="combo">0</div>
-                                <div class="stat-label">連擊</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="next-block-panel">
-                        <h3 class="next-block-title">下一個方塊</h3>
-                        <canvas id="nextBlockCanvas" width="150" height="150"></canvas>
-                    </div>
-                    
-                    <div class="controls-panel">
-                        <h3 class="controls-title">遊戲控制</h3>
-                        <div class="controls-grid">
-                            <div class="control-item">
-                                <span>移動左</span>
-                                <div class="key">←</div>
-                            </div>
-                            <div class="control-item">
-                                <span>移動右</span>
-                                <div class="key">→</div>
-                            </div>
-                            <div class="control-item">
-                                <span>旋轉</span>
-                                <div class="key">↑</div>
-                            </div>
-                            <div class="control-item">
-                                <span>加速下落</span>
-                                <div class="key">↓</div>
-                            </div>
-                            <div class="control-item">
-                                <span>直接落下</span>
-                                <div class="key">空格</div>
-                            </div>
-                            <div class="control-item">
-                                <span>暫停</span>
-                                <div class="key">P</div>
-                            </div>
-                        </div>
-                        
-                        <div class="action-buttons">
-                            <button class="action-btn" id="startBtn">
-                                <i class="fas fa-play"></i> 開始遊戲
-                            </button>
-                            <button class="action-btn" id="pauseBtn">
-                                <i class="fas fa-pause"></i> 暫停遊戲
-                            </button>
-                            <button class="action-btn" id="resetBtn">
-                                <i class="fas fa-redo"></i> 重新開始
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="mobile-controls">
-                <button class="mobile-btn rotate-btn">
-                    <i class="fas fa-rotate-right"></i>
-                </button>
-                <button class="mobile-btn left-btn">
-                    <i class="fas fa-arrow-left"></i>
-                </button>
-                <button class="mobile-btn down-btn">
-                    <i class="fas fa-arrow-down"></i>
-                </button>
-                <button class="mobile-btn right-btn">
-                    <i class="fas fa-arrow-right"></i>
-                </button>
-                <button class="mobile-btn drop-btn">
-                    <i class="fas fa-arrow-down-long"></i>
-                </button>
-            </div>
-            
-            <div class="instructions">
-                <h3 class="instructions-title">遊戲說明</h3>
-                <div class="instructions-content">
-                    <div class="instruction-item">
-                        <i class="fas fa-gamepad"></i>
-                        <strong>遊戲目標：</strong> 排列下落的方塊，填滿一整行即可消除得分。防止方塊堆積到頂端。
-                    </div>
-                    <div class="instruction-item">
-                        <i class="fas fa-chart-line"></i>
-                        <strong>計分規則：</strong> 
-                        <ul style="margin-left: 20px; margin-top: 5px;">
-                            <li>消除1行: 100分 × 等級</li>
-                            <li>消除2行: 300分 × 等級</li>
-                            <li>消除3行: 500分 × 等級</li>
-                            <li>消除4行: 800分 × 等級</li>
-                            <li>連擊獎勵: 每連續消除 +50分</li>
-                        </ul>
-                    </div>
-                    <div class="instruction-item">
-                        <i class="fas fa-layer-group"></i>
-                        <strong>方塊類型：</strong>
-                        <div class="block-types">
-                            <div class="block-sample" style="background-color: #ff7e5f;"></div>
-                            <div class="block-sample" style="background-color: #feb47b;"></div>
-                            <div class="block-sample" style="background-color: #86a8e7;"></div>
-                            <div class="block-sample" style="background-color: #91eae4;"></div>
-                            <div class="block-sample" style="background-color: #9d4edd;"></div>
-                            <div class="block-sample" style="background-color: #ff9e00;"></div>
-                            <div class="block-sample" style="background-color: #4CAF50;"></div>
-                        </div>
-                    </div>
-                    <div class="instruction-item">
-                        <i class="fas fa-lightbulb"></i>
-                        <strong>遊戲技巧：</strong> 盡量創造四行同時消除（Tetris）獲得高分，保持場地中央空曠以便旋轉方塊。
-                    </div>
-                </div>
-            </div>
-        </main>
-        
-        <footer class="footer">
-            <p>© 2023 Block Blast 遊戲 | 使用HTML5 Canvas和JavaScript開發</p>
-            <p>靈感來自經典俄羅斯方塊遊戲</p>
-        </footer>
+<body class="bg-pattern">
+  <!-- Background Orbs -->
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+
+  <!-- Combo Popup -->
+  <div id="combo-popup" class="combo-popup"></div>
+
+  <!-- Main Game -->
+  <main class="relative z-10 min-h-screen flex flex-col items-center justify-center p-4 gap-8">
+    
+    <!-- Header -->
+    <header class="text-center animate-in">
+      <h1 class="font-display text-4xl md:text-5xl font-black tracking-wide mb-2">
+        <span style="color: var(--accent);">BLOCK</span> BLAST
+      </h1>
+      <p class="text-[var(--muted)] text-sm">Place blocks. Clear lines. Score big.</p>
+    </header>
+
+    <!-- Score Panel -->
+    <div class="score-panel text-center animate-in delay-1">
+      <div class="text-[var(--muted)] text-sm mb-1">SCORE</div>
+      <div class="score-value" id="score">0</div>
+      <div class="flex gap-6 justify-center mt-4 text-sm">
+        <div>
+          <span class="text-[var(--muted)]">Best:</span>
+          <span class="font-display font-bold" id="best-score">0</span>
+        </div>
+        <div>
+          <span class="text-[var(--muted)]">Lines:</span>
+          <span class="font-display font-bold" id="lines-cleared">0</span>
+        </div>
+      </div>
     </div>
 
-    <script>
-        // 遊戲常量
-        const COLS = 10;
-        const ROWS = 20;
-        const BLOCK_SIZE = 40;
-        const COLORS = [
-            null,
-            '#FF7E5F', // I型方塊 - 橙色
-            '#FEB47B', // J型方塊 - 淺橙色
-            '#86A8E7', // L型方塊 - 藍色
-            '#91EAE4', // O型方塊 - 青色
-            '#9D4EDD', // S型方塊 - 紫色
-            '#FF9E00', // T型方塊 - 黃色
-            '#4CAF50'  // Z型方塊 - 綠色
-        ];
-        
-        // 方塊形狀定義
-        const SHAPES = [
-            null,
-            // I型方塊
-            [
-                [0, 0, 0, 0],
-                [1, 1, 1, 1],
-                [0, 0, 0, 0],
-                [0, 0, 0, 0]
-            ],
-            // J型方塊
-            [
-                [2, 0, 0],
-                [2, 2, 2],
-                [0, 0, 0]
-            ],
-            // L型方塊
-            [
-                [0, 0, 3],
-                [3, 3, 3],
-                [0, 0, 0]
-            ],
-            // O型方塊
-            [
-                [4, 4],
-                [4, 4]
-            ],
-            // S型方塊
-            [
-                [0, 5, 5],
-                [5, 5, 0],
-                [0, 0, 0]
-            ],
-            // T型方塊
-            [
-                [0, 6, 0],
-                [6, 6, 6],
-                [0, 0, 0]
-            ],
-            // Z型方塊
-            [
-                [7, 7, 0],
-                [0, 7, 7],
-                [0, 0, 0]
-            ]
-        ];
-        
-        // 獲取DOM元素
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const nextCanvas = document.getElementById('nextBlockCanvas');
-        const nextCtx = nextCanvas.getContext('2d');
-        
-        // 遊戲元素
-        const scoreElement = document.getElementById('score');
-        const levelElement = document.getElementById('level');
-        const linesElement = document.getElementById('lines');
-        const comboElement = document.getElementById('combo');
-        const startBtn = document.getElementById('startBtn');
-        const pauseBtn = document.getElementById('pauseBtn');
-        const resetBtn = document.getElementById('resetBtn');
-        const restartBtn = document.getElementById('restartBtn');
-        const gameOverScreen = document.getElementById('gameOverScreen');
-        const finalScoreElement = document.getElementById('finalScore');
-        const highScoreDisplay = document.getElementById('highScoreDisplay');
-        
-        // 移動控制按鈕
-        const rotateBtn = document.querySelector('.rotate-btn');
-        const leftBtn = document.querySelector('.left-btn');
-        const rightBtn = document.querySelector('.right-btn');
-        const downBtn = document.querySelector('.down-btn');
-        const dropBtn = document.querySelector('.drop-btn');
-        
-        // 遊戲變數
-        let board = [];
-        let currentPiece = null;
-        let nextPiece = null;
-        let score = 0;
-        let level = 1;
-        let lines = 0;
-        let combo = 0;
-        let dropCounter = 0;
-        let dropInterval = 1000; // 初始下落間隔（毫秒）
-        let lastTime = 0;
-        let gameRunning = false;
-        let gamePaused = false;
-        let highScore = localStorage.getItem('blockBlastHighScore') || 0;
-        let gameOver = false;
-        
-        // 初始化遊戲板
-        function createBoard() {
-            board = Array.from({length: ROWS}, () => Array(COLS).fill(0));
+    <!-- Game Grid -->
+    <div class="game-grid animate-in delay-2" id="game-grid">
+      <!-- Grid cells generated by JS -->
+    </div>
+
+    <!-- Pieces Tray -->
+    <div class="pieces-tray animate-in delay-3" id="pieces-tray">
+      <!-- Pieces generated by JS -->
+    </div>
+
+    <!-- Controls -->
+    <div class="flex gap-4 animate-in delay-3">
+      <button class="btn-secondary" onclick="newGame()">New Game</button>
+    </div>
+  </main>
+
+  <!-- Game Over Modal -->
+  <div id="game-over-modal" class="modal-overlay">
+    <div class="modal-content">
+      <h2 class="font-display text-3xl font-bold mb-2" style="color: var(--accent);">GAME OVER</h2>
+      <p class="text-[var(--muted)] mb-6">No more valid moves!</p>
+      <div class="text-5xl font-display font-black mb-2" id="final-score">0</div>
+      <p class="text-[var(--muted)] text-sm mb-8">Final Score</p>
+      <button class="btn-primary" onclick="newGame()">Play Again</button>
+    </div>
+  </div>
+
+  <script>
+    // ============ GAME CONFIG ============
+    const GRID_SIZE = 8;
+    const CELL_SIZE = 42;
+
+    // Block colors - vibrant palette
+    const COLORS = [
+      '#00ffe5', // Cyan
+      '#ff6b35', // Orange
+      '#a855f7', // Purple
+      '#22c55e', // Green
+      '#f59e0b', // Amber
+      '#ec4899', // Pink
+      '#3b82f6', // Blue
+    ];
+
+    // All possible piece shapes
+    const PIECE_SHAPES = [
+      // Single
+      { shape: [[1]], name: 'dot' },
+      
+      // Lines
+      { shape: [[1,1]], name: 'h2' },
+      { shape: [[1],[1]], name: 'v2' },
+      { shape: [[1,1,1]], name: 'h3' },
+      { shape: [[1],[1],[1]], name: 'v3' },
+      { shape: [[1,1,1,1]], name: 'h4' },
+      { shape: [[1],[1],[1],[1]], name: 'v4' },
+      { shape: [[1,1,1,1,1]], name: 'h5' },
+      { shape: [[1],[1],[1],[1],[1]], name: 'v5' },
+      
+      // Squares
+      { shape: [[1,1],[1,1]], name: 'sq2' },
+      { shape: [[1,1,1],[1,1,1],[1,1,1]], name: 'sq3' },
+      
+      // L shapes
+      { shape: [[1,0],[1,0],[1,1]], name: 'L1' },
+      { shape: [[1,1,1],[1,0,0]], name: 'L2' },
+      { shape: [[1,1],[0,1],[0,1]], name: 'L3' },
+      { shape: [[0,0,1],[1,1,1]], name: 'L4' },
+      { shape: [[1,1,0],[0,1,1]], name: 'S1' },
+      { shape: [[0,1,1],[1,1,0]], name: 'S2' },
+      
+      // T shapes
+      { shape: [[1,1,1],[0,1,0]], name: 'T1' },
+      { shape: [[0,1],[1,1],[0,1]], name: 'T2' },
+      { shape: [[0,1,0],[1,1,1]], name: 'T3' },
+      { shape: [[1,0],[1,1],[1,0]], name: 'T4' },
+    ];
+
+    // ============ GAME STATE ============
+    let grid = [];
+    let currentPieces = [];
+    let score = 0;
+    let bestScore = parseInt(localStorage.getItem('blockBlastBest') || '0');
+    let linesCleared = 0;
+    let draggedPiece = null;
+    let dragOffset = { x: 0, y: 0 };
+
+    // ============ DOM ELEMENTS ============
+    const gridEl = document.getElementById('game-grid');
+    const trayEl = document.getElementById('pieces-tray');
+    const scoreEl = document.getElementById('score');
+    const bestScoreEl = document.getElementById('best-score');
+    const linesEl = document.getElementById('lines-cleared');
+    const comboPopup = document.getElementById('combo-popup');
+    const gameOverModal = document.getElementById('game-over-modal');
+    const finalScoreEl = document.getElementById('final-score');
+
+    // ============ INITIALIZATION ============
+    function init() {
+      createGrid();
+      newGame();
+      setupDragListeners();
+      bestScoreEl.textContent = bestScore;
+    }
+
+    function createGrid() {
+      gridEl.style.gridTemplateColumns = `repeat(${GRID_SIZE}, 1fr)`;
+      gridEl.innerHTML = '';
+      
+      for (let y = 0; y < GRID_SIZE; y++) {
+        for (let x = 0; x < GRID_SIZE; x++) {
+          const cell = document.createElement('div');
+          cell.className = 'grid-cell';
+          cell.dataset.x = x;
+          cell.dataset.y = y;
+          gridEl.appendChild(cell);
         }
+      }
+    }
+
+    function newGame() {
+      // Reset state
+      grid = Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(null));
+      score = 0;
+      linesCleared = 0;
+      currentPieces = [];
+      
+      // Update UI
+      scoreEl.textContent = '0';
+      linesEl.textContent = '0';
+      gameOverModal.classList.remove('active');
+      
+      // Clear grid visuals
+      document.querySelectorAll('.grid-cell').forEach(cell => {
+        cell.className = 'grid-cell';
+        cell.style.background = '';
+      });
+      
+      // Generate new pieces
+      generatePieces();
+    }
+
+    function generatePieces() {
+      currentPieces = [];
+      
+      for (let i = 0; i < 3; i++) {
+        const shapeData = PIECE_SHAPES[Math.floor(Math.random() * PIECE_SHAPES.length)];
+        const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+        currentPieces.push({
+          id: i,
+          shape: shapeData.shape,
+          color: color,
+          used: false
+        });
+      }
+      
+      renderPieces();
+      checkGameOver();
+    }
+
+    // ============ RENDERING ============
+    function renderPieces() {
+      trayEl.innerHTML = '';
+      
+      currentPieces.forEach((piece, idx) => {
+        if (piece.used) return;
         
-        // 創建隨機方塊
-        function createPiece() {
-            // 從1-7中隨機選擇一個方塊類型（0為空）
-            const pieceType = Math.floor(Math.random() * 7) + 1;
-            return {
-                shape: SHAPES[pieceType],
-                color: COLORS[pieceType],
-                type: pieceType,
-                x: Math.floor(COLS / 2) - Math.floor(SHAPES[pieceType][0].length / 2),
-                y: 0
-            };
-        }
+        const container = document.createElement('div');
+        container.className = 'piece-container';
         
-        // 繪製單個方塊單元
-        function drawBlock(ctx, x, y, color) {
-            // 方塊主體
-            ctx.fillStyle = color;
-            ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
-            
-            // 方塊邊框
-            ctx.strokeStyle = '#1a1a2e';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
-            
-            // 方塊高光效果
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-            ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, 5);
-            ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, 5, BLOCK_SIZE);
-            
-            // 方塊陰影效果
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-            ctx.fillRect(x * BLOCK_SIZE + BLOCK_SIZE - 5, y * BLOCK_SIZE, 5, BLOCK_SIZE);
-            ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE + BLOCK_SIZE - 5, BLOCK_SIZE, 5);
-        }
+        const pieceEl = document.createElement('div');
+        pieceEl.className = 'game-piece';
+        pieceEl.dataset.pieceId = idx;
+        pieceEl.style.gridTemplateColumns = `repeat(${piece.shape[0].length}, 1fr)`;
         
-        // 繪製遊戲板
-        function drawBoard() {
-            // 清除畫布
-            ctx.fillStyle = '#1a1a2e';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        piece.shape.forEach((row, py) => {
+          row.forEach((cell, px) => {
+            const cellEl = document.createElement('div');
+            cellEl.className = 'piece-cell';
             
-            // 繪製網格線
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
-            ctx.lineWidth = 1;
-            
-            // 垂直線
-            for (let x = 0; x <= COLS; x++) {
-                ctx.beginPath();
-                ctx.moveTo(x * BLOCK_SIZE, 0);
-                ctx.lineTo(x * BLOCK_SIZE, ROWS * BLOCK_SIZE);
-                ctx.stroke();
-            }
-            
-            // 水平線
-            for (let y = 0; y <= ROWS; y++) {
-                ctx.beginPath();
-                ctx.moveTo(0, y * BLOCK_SIZE);
-                ctx.lineTo(COLS * BLOCK_SIZE, y * BLOCK_SIZE);
-                ctx.stroke();
-            }
-            
-            // 繪製已固定的方塊
-            for (let y = 0; y < ROWS; y++) {
-                for (let x = 0; x < COLS; x++) {
-                    if (board[y][x]) {
-                        drawBlock(ctx, x, y, COLORS[board[y][x]]);
-                    }
-                }
-            }
-            
-            // 繪製當前下落的方塊
-            if (currentPiece) {
-                drawPiece(currentPiece);
-            }
-        }
-        
-        // 繪製當前方塊
-        function drawPiece(piece) {
-            piece.shape.forEach((row, y) => {
-                row.forEach((value, x) => {
-                    if (value !== 0) {
-                        drawBlock(ctx, piece.x + x, piece.y + y, piece.color);
-                    }
-                });
-            });
-        }
-        
-        // 繪製下一個方塊預覽
-        function drawNextPiece() {
-            // 清除預覽畫布
-            nextCtx.fillStyle = '#1a1a2e';
-            nextCtx.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
-            
-            if (nextPiece) {
-                // 計算居中位置
-                const offsetX = (nextCanvas.width / BLOCK_SIZE - nextPiece.shape[0].length) / 2;
-                const offsetY = (nextCanvas.height / BLOCK_SIZE - nextPiece.shape.length) / 2;
-                
-                // 繪製下一個方塊
-                nextPiece.shape.forEach((row, y) => {
-                    row.forEach((value, x) => {
-                        if (value !== 0) {
-                            drawBlock(nextCtx, offsetX + x, offsetY + y, nextPiece.color);
-                        }
-                    });
-                });
-            }
-        }
-        
-        // 碰撞檢測
-        function collision(piece, board, dx = 0, dy = 0) {
-            for (let y = 0; y < piece.shape.length; y++) {
-                for (let x = 0; x < piece.shape[y].length; x++) {
-                    if (piece.shape[y][x] !== 0) {
-                        const newX = piece.x + x + dx;
-                        const newY = piece.y + y + dy;
-                        
-                        // 檢查是否超出邊界
-                        if (newX < 0 || newX >= COLS || newY >= ROWS) {
-                            return true;
-                        }
-                        
-                        // 檢查是否與已固定的方塊碰撞
-                        if (newY >= 0 && board[newY][newX]) {
-                            return true;
-                        }
-                    }
-                }
-            }
-            return false;
-        }
-        
-        // 移動方塊
-        function movePiece(dx, dy) {
-            if (!collision(currentPiece, board, dx, dy)) {
-                currentPiece.x += dx;
-                currentPiece.y += dy;
-                return true;
-            }
-            return false;
-        }
-        
-        // 旋轉方塊
-        function rotatePiece() {
-            const originalShape = currentPiece.shape;
-            
-            // 創建旋轉後的形狀
-            const rotated = [];
-            for (let y = 0; y < originalShape[0].length; y++) {
-                rotated[y] = [];
-                for (let x = 0; x < originalShape.length; x++) {
-                    rotated[y][x] = originalShape[originalShape.length - 1 - x][y];
-                }
-            }
-            
-            // 保存原始形狀以便恢復
-            currentPiece.shape = rotated;
-            
-            // 如果旋轉後發生碰撞，嘗試牆踢（wall kick）
-            if (collision(currentPiece, board)) {
-                // 嘗試向左移動
-                if (!collision(currentPiece, board, -1, 0)) {
-                    currentPiece.x -= 1;
-                }
-                // 嘗試向右移動
-                else if (!collision(currentPiece, board, 1, 0)) {
-                    currentPiece.x += 1;
-                }
-                // 如果都不行，恢復原始形狀
-                else {
-                    currentPiece.shape = originalShape;
-                }
-            }
-        }
-        
-        // 固定方塊到遊戲板
-        function mergePiece() {
-            currentPiece.shape.forEach((row, y) => {
-                row.forEach((value, x) => {
-                    if (value !== 0) {
-                        const boardY = currentPiece.y + y;
-                        if (boardY >= 0) { // 確保不在頂部之上
-                            board[boardY][currentPiece.x + x] = value;
-                        }
-                    }
-                });
-            });
-        }
-        
-        // 檢查並消除完整的行
-        function checkLines() {
-            let linesCleared = 0;
-            let linesToRemove = [];
-            
-            // 找出完整的行
-            for (let y = ROWS - 1; y >= 0; y--) {
-                if (board[y].every(value => value !== 0)) {
-                    linesToRemove.push(y);
-                    linesCleared++;
-                }
-            }
-            
-            if (linesCleared > 0) {
-                // 增加連擊數
-                combo++;
-                comboElement.textContent = combo;
-                
-                // 添加連擊效果
-                comboElement.classList.add('combo-effect');
-                setTimeout(() => {
-                    comboElement.classList.remove('combo-effect');
-                }, 300);
-                
-                // 計算分數
-                let lineScore = 0;
-                switch (linesCleared) {
-                    case 1: lineScore = 100; break;
-                    case 2: lineScore = 300; break;
-                    case 3: lineScore = 500; break;
-                    case 4: lineScore = 800; break;
-                }
-                
-                // 連擊獎勵
-                const comboBonus = combo * 50;
-                
-                // 等級加成
-                const totalScore = (lineScore + comboBonus) * level;
-                score += totalScore;
-                
-                // 更新行數
-                lines += linesCleared;
-                
-                // 更新等級（每10行升一級）
-                level = Math.floor(lines / 10) + 1;
-                
-                // 更新下落速度（每升一級加快10%）
-                dropInterval = Math.max(100, 1000 - (level - 1) * 100);
-                
-                // 更新顯示
-                updateStats();
-                
-                // 播放消除動畫
-                playClearAnimation(linesToRemove);
-                
-                // 延遲後實際消除行
-                setTimeout(() => {
-                    // 從下往上移除完整的行
-                    linesToRemove.forEach(row => {
-                        board.splice(row, 1);
-                        board.unshift(Array(COLS).fill(0));
-                    });
-                    
-                    // 重繪遊戲板
-                    drawBoard();
-                }, 300);
-                
-                return true;
+            if (cell) {
+              cellEl.classList.add('filled');
+              cellEl.style.background = piece.color;
             } else {
-                // 沒有消除行，重置連擊
-                combo = 0;
-                comboElement.textContent = combo;
-                return false;
+              cellEl.classList.add('empty');
             }
+            
+            pieceEl.appendChild(cellEl);
+          });
+        });
+        
+        // Check if piece can be placed
+        if (!canPieceBePlaced(piece)) {
+          pieceEl.classList.add('disabled');
         }
         
-        // 播放消除動畫
-        function playClearAnimation(rows) {
-            rows.forEach(row => {
-                for (let x = 0; x < COLS; x++) {
-                    // 創建爆炸效果
-                    const block = document.createElement('div');
-                    block.style.position = 'absolute';
-                    block.style.width = BLOCK_SIZE + 'px';
-                    block.style.height = BLOCK_SIZE + 'px';
-                    block.style.left = (canvas.offsetLeft + x * BLOCK_SIZE) + 'px';
-                    block.style.top = (canvas.offsetTop + row * BLOCK_SIZE) + 'px';
-                    block.style.backgroundColor = COLORS[board[row][x]];
-                    block.style.borderRadius = '4px';
-                    block.style.boxShadow = '0 0 10px currentColor';
-                    block.classList.add('exploding');
-                    
-                    document.body.appendChild(block)
-                    
+        container.appendChild(pieceEl);
+        trayEl.appendChild(container);
+      });
+    }
+
+    function renderGrid() {
+      for (let y = 0; y < GRID_SIZE; y++) {
+        for (let x = 0; x < GRID_SIZE; x++) {
+          const cell = document.querySelector(`.grid-cell[data-x="${x}"][data-y="${y}"]`);
+          if (grid[y][x]) {
+            cell.classList.add('filled');
+            cell.style.background = grid[y][x];
+          } else {
+            cell.className = 'grid-cell';
+            cell.style.background = '';
+          }
+        }
+      }
+    }
+
+    // ============ DRAG AND DROP ============
+    function setupDragListeners() {
+      // Mouse events for pieces
+      trayEl.addEventListener('mousedown', onDragStart);
+      document.addEventListener('mousemove', onDragMove);
+      document.addEventListener('mouseup', onDragEnd);
+      
+      // Touch events
+      trayEl.addEventListener('touchstart', onDragStart, { passive: false });
+      document.addEventListener('touchmove', onDragMove, { passive: false });
+      document.addEventListener('touchend', onDragEnd);
+    }
+
+    function onDragStart(e) {
+      const pieceEl = e.target.closest('.game-piece');
+      if (!pieceEl || pieceEl.classList.contains('disabled')) return;
+      
+      e.preventDefault();
+      
+      const pieceId = parseInt(pieceEl.dataset.pieceId);
+      draggedPiece = currentPieces[pieceId];
+      
+      const rect = pieceEl.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      
+      dragOffset.x = clientX - rect.left;
+      dragOffset.y = clientY - rect.top;
+      
+      pieceEl.classList.add('dragging');
+    }
+
+    function onDragMove(e) {
+      if (!draggedPiece) return;
+      
+      e.preventDefault();
+      
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      
+      // Calculate grid position
+      const gridRect = gridEl.getBoundingClientRect();
+      const cellSize = gridRect.width / GRID_SIZE;
+      
+      const gridX = Math.floor((clientX - gridRect.left) / cellSize);
+      const gridY = Math.floor((clientY - gridRect.top) / cellSize);
+      
+      // Clear previous preview
+      clearPreview();
+      
+      // Show preview
+      showPreview(draggedPiece, gridX, gridY);
+    }
+
+    function onDragEnd(e) {
+      if (!draggedPiece) return;
+      
+      const clientX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
+      const clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+      
+      // Calculate final grid position
+      const gridRect = gridEl.getBoundingClientRect();
+      const cellSize = gridRect.width / GRID_SIZE;
+      
+      const gridX = Math.floor((clientX - gridRect.left) / cellSize);
+      const gridY = Math.floor((clientY - gridRect.top) / cellSize);
+      
+      // Try to place piece
+      if (canPlace(draggedPiece.shape, gridX, gridY)) {
+        placePiece(draggedPiece, gridX, gridY);
+      }
+      
+      // Clear preview and reset
+      clearPreview();
+      document.querySelectorAll('.game-piece.dragging').forEach(el => {
+        el.classList.remove('dragging');
+      });
+      draggedPiece = null;
+    }
+
+    // ============ GAME LOGIC ============
+    function canPlace(shape, startX, startY) {
+      for (let y = 0; y < shape.length; y++) {
+        for (let x = 0; x < shape[y].length; x++) {
+          if (shape[y][x]) {
+            const gridX = startX + x;
+            const gridY = startY + y;
+            
+            if (gridX < 0 || gridX >= GRID_SIZE || 
+                gridY < 0 || gridY >= GRID_SIZE ||
+                grid[gridY][gridX]) {
+              return false;
+            }
+          }
+        }
+      }
+      return true;
+    }
+
+    function canPieceBePlaced(piece) {
+      for (let y = 0; y < GRID_SIZE; y++) {
+        for (let x = 0; x < GRID_SIZE; x++) {
+          if (canPlace(piece.shape, x, y)) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    function placePiece(piece, startX, startY) {
+      // Place piece on grid
+      piece.shape.forEach((row, y) => {
+        row.forEach((cell, x) => {
+          if (cell) {
+            grid[startY + y][startX + x] = piece.color;
+          }
+        });
+      });
+      
+      // Mark piece as used
+      piece.used = true;
+      
+      // Calculate score for placing
+      const cellsPlaced = piece.shape.flat().filter(c => c).length;
+      score += cellsPlaced;
+      
+      // Check and clear lines
+      const cleared = checkAndClearLines();
+      score += cleared * 10 * (cleared > 1 ? cleared : 1); // Bonus for multi-clear
+      
+      // Update UI
+      scoreEl.textContent = score;
+      
+      if (score > bestScore) {
+        bestScore = score;
+        bestScoreEl.textContent = bestScore;
+        localStorage.setItem('blockBlastBest', bestScore.toString());
+      }
+      
+      renderGrid();
+      renderPieces();
+      
+      // Check if need new pieces
+      if (currentPieces.every(p => p.used)) {
+        generatePieces();
+      } else {
+        checkGameOver();
+      }
+    }
+
+    function checkAndClearLines() {
+      const rowsToClear = [];
+      const colsToClear = [];
+      
+      // Check rows
+      for (let y = 0; y < GRID_SIZE; y++) {
+        if (grid[y].every(cell => cell !== null)) {
+          rowsToClear.push(y);
+        }
+      }
+      
+      // Check columns
+      for (let x = 0; x < GRID_SIZE; x++) {
+        let fullCol = true;
+        for (let y = 0; y < GRID_SIZE; y++) {
+          if (!grid[y][x]) {
+            fullCol = false;
+            break;
+          }
+        }
+        if (fullCol) {
+          colsToClear.push(x);
+        }
+      }
+      
+      const totalCleared = rowsToClear.length + colsToClear.length;
+      
+      if (totalCleared > 0) {
+        linesCleared += totalCleared;
+        linesEl.textContent = linesCleared;
+        
+        // Animate clearing
+        const cellsToClear = new Set();
+        
+        rowsToClear.forEach(y => {
+          for (let x = 0; x < GRID_SIZE; x++) {
+            cellsToClear.add(`${x},${y}`);
+          }
+        });
+        
+        colsToClear.forEach(x => {
+          for (let y = 0; y < GRID_SIZE; y++) {
+            cellsToClear.add(`${x},${y}`);
+          }
+        });
+        
+        cellsToClear.forEach(key => {
+          const [x, y] = key.split(',').map(Number);
+          const cell = document.querySelector(`.grid-cell[data-x="${x}"][data-y="${y}"]`);
+          if (cell) {
+            cell.classList.add('clearing');
+          }
+        });
+        
+        // Show combo popup
+        if (totalCleared >= 2) {
+          showCombo(totalCleared);
+        }
+        
+        // Clear after animation
+        setTimeout(() => {
+          cellsToClear.forEach(key => {
+            const [x, y] = key.split(',').map(Number);
+            grid[y][x] = null;
+          });
+          renderGrid();
+        }, 400);
+      }
+      
+      return totalCleared;
+    }
+
+    function showCombo(count) {
+      const messages = {
+        2: 'DOUBLE!',
+        3: 'TRIPLE!',
+        4: 'QUAD!',
+        5: 'AMAZING!',
+      };
+      
+      comboPopup.textContent = messages[Math.min(count, 5)] || `${count}x COMBO!`;
+      comboPopup.classList.remove('show');
+      void comboPopup.offsetWidth; // Trigger reflow
+      comboPopup.classList.add('show');
+    }
+
+    function showPreview(piece, startX, startY) {
+      const isValid = canPlace(piece.shape, startX, startY);
+      
+      piece.shape.forEach((row, y) => {
+        row.forEach((cell, x) => {
+          if (cell) {
+            const gridX = startX + x;
+            const gridY = startY + y;
+            
+            if (gridX >= 0 && gridX < GRID_SIZE && gridY >= 0 && gridY < GRID_SIZE) {
+              const cellEl = document.querySelector(`.grid-cell[data-x="${gridX}"][data-y="${gridY}"]`);
+              if (cellEl && !grid[gridY][gridX]) {
+                cellEl.classList.add(isValid ? 'preview' : 'invalid');
+              }
+            }
+          }
+        });
+      });
+    }
+
+    function clearPreview() {
+      document.querySelectorAll('.grid-cell.preview, .grid-cell.invalid').forEach(cell => {
+        cell.classList.remove('preview', 'invalid');
+      });
+    }
+
+    function checkGameOver() {
+      const availablePieces = currentPieces.filter(p => !p.used);
+      const hasValidMove = availablePieces.some(p => canPieceBePlaced(p));
+      
+      if (!hasValidMove && availablePieces.length > 0) {
+        // Game over - no valid moves
+        setTimeout(() => {
+          finalScoreEl.textContent = score;
+          gameOverModal.classList.add('active');
+        }, 500);
+      }
+    }
+
+    // ============ START GAME ============
+    init();
+  </script>
+</body>
+</html>

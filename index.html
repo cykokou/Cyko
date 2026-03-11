@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arcade Hub - 3 Games</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #06080d;
+      --bg-card: #0d1117;
+      --fg: #e6edf3;
+      --muted: #7d8590;
+      --accent: #00fff5;
+      --accent-2: #ff6b35;
+      --accent-3: #a855f7;
+      --border: #21262d;
+      --glow: rgba(0, 255, 245, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .font-display {
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    /* Background Pattern */
+    .bg-grid {
+      background-image: 
+        linear-gradient(rgba(0, 255, 245, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 255, 245, 0.03) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+
+    /* Glow orbs */
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      opacity: 0.4;
+    }
+
+    .orb-1 {
+      width: 400px;
+      height: 400px;
+      background: var(--accent);
+      top: -100px;
+      right: -100px;
+    }
+
+    .orb-2 {
+      width: 300px;
+      height: 300px;
+      background: var(--accent-3);
+      bottom: 20%;
+      left: -100px;
+    }
+
+    .orb-3 {
+      width: 250px;
+      height: 250px;
+      background: var(--accent-2);
+      bottom: -50px;
+      right: 20%;
+    }
+
+    /* Cards */
+    .game-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .game-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--glow), transparent);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    .game-card:hover::before {
+      opacity: 1;
+    }
+
+    .game-card:hover {
+      transform: translateY(-8px);
+      border-color: var(--accent);
+      box-shadow: 0 20px 40px -20px rgba(0, 255, 245, 0.3);
+    }
+
+    /* Buttons */
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #00c9c0);
+      color: var(--bg);
+      font-weight: 600;
+      padding: 12px 28px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Space Grotesk', sans-serif;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, transparent, rgba(255,255,255,0.2));
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .btn-primary:hover::after {
+      opacity: 1;
+    }
+
+    .btn-primary:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 30px rgba(0, 255, 245, 0.4);
+    }
+
+    .btn-primary:active {
+      transform: scale(0.98);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--fg);
+      font-weight: 500;
+      padding: 10px 24px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(0, 255, 245, 0.05);
+    }
+
+    /* Modal */
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(6, 8, 13, 0.95);
+      backdrop-filter: blur(10px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.4s ease;
+    }
+
+    .modal.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-content {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+      max-width: 90vw;
+      max-height: 90vh;
+      overflow: auto;
+      transform: scale(0.9) translateY(20px);
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .modal.active .modal-content {
+      transform: scale(1) translateY(0);
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .animate-fade-in {
+      animation: fadeInUp 0.6s ease forwards;
+    }
+
+    .stagger-1 { animation-delay: 0.1s; opacity: 0; }
+    .stagger-2 { animation-delay: 0.2s; opacity: 0; }
+    .stagger-3 { animation-delay: 0.3s; opacity: 0; }
+    .stagger-4 { animation-delay: 0.4s; opacity: 0; }
+
+    /* Game specific */
+    .game-canvas {
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      background: #0a0d12;
+    }
+
+    .score-display {
+      font-family: 'Orbitron', sans-serif;
+      color: var(--accent);
+      font-size: 1.5rem;
+    }
+
+    /* RPS Hands */
+    .hand-btn {
+      font-size: 3rem;
+      padding: 20px;
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      min-width: 100px;
+    }
+
+    .hand-btn:hover {
+      border-color: var(--accent);
+      transform: scale(1.1);
+      box-shadow: 0 0 20px var(--glow);
+    }
+
+    .hand-btn.selected {
+      border-color: var(--accent);
+      background: rgba(0, 255, 245, 0.1);
+    }
+
+    /* Block Blast */
+    .block-cell {
+      width: 28px;
+      height: 28px;
+      border: 1px solid var(--border);
+      transition: all 0.15s ease;
+    }
+
+    .block-cell.filled {
+      border-color: transparent;
+    }
+
+    .block-piece {
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .block-piece:hover {
+      transform: scale(1.05);
+    }
+
+    /* Focus states */
+    button:focus-visible,
+    .hand-btn:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--muted);
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* Mobile */
+    @media (max-width: 768px) {
+      .orb { opacity: 0.2; }
+      .modal-content { padding: 20px; }
+      .hand-btn { font-size: 2rem; padding: 15px; min-width: 80px; }
+    }
+  </style>
+</head>
+<body class="bg-grid">
+  <!-- Background Orbs -->
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <!-- Header -->
+  <header class="relative z-10 py-8 px-6">
+    <nav class="max-w-6xl mx-auto flex items-center justify-between">
+      <div class="font-display font-bold text-2xl tracking-wider">
+        <span class="text-[var(--accent)]">ARCADE</span> HUB
+      </div>
+      <div class="flex gap-4">
+        <button class="btn-secondary text-sm" onclick="scrollToGames()">Play Games</button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Hero -->
+  <section class="relative z-10 px-6 py-16 text-center">
+    <div class="max-w-4xl mx-auto">
+      <h1 class="font-display font-black text-5xl md:text-7xl leading-tight animate-fade-in stagger-1">
+        Three Classic Games<br>
+        <span class="text-[var(--accent)]">One Destination</span>
+      </h1>
+      <p class="mt-6 text-lg text-[var(--muted)] max-w-2xl mx-auto animate-fade-in stagger-2">
+        Challenge yourself with Block Blast puzzles, test your reflexes in Snake, 
+        or settle scores with Rock Paper Scissors.
+      </p>
+      <div class="mt-10 flex flex-wrap gap-4 justify-center animate-fade-in stagger-3">
+        <button class="btn-primary" onclick="scrollToGames()">Start Playing</button>
+        <button class="btn-secondary" onclick="showLeaderboard()">View Scores</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <section class="relative z-10 px-6 py-12">
+    <div class="max-w-4xl mx-auto grid grid-cols-3 gap-8 text-center animate-fade-in stagger-4">
+      <div>
+        <div class="font-display text-3xl md:text-4xl font-bold text-[var(--accent)]" id="totalPlays">0</div>
+        <div class="text-[var(--muted)] text-sm mt-1">Games Played</div>
+      </div>
+      <div>
+        <div class="font-display text-3xl md:text-4xl font-bold text-[var(--accent-2)]" id="highScore">0</div>
+        <div class="text-[var(--muted)] text-sm mt-1">High Scores</div>
+      </div>
+      <div>
+        <div class="font-display text-3xl md:text-4xl font-bold text-[var(--accent-3)]">3</div>
+        <div class="text-[var(--muted)] text-sm mt-1">Games Available</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Game Cards -->
+  <section id="games" class="relative z-10 px-6 py-16">
+    <div class="max-w-6xl mx-auto">
+      <h2 class="font-display text-3xl font-bold mb-12 text-center">Choose Your Game</h2>
+      
+      <div class="grid md:grid-cols-3 gap-8">
+        <!-- Block Blast -->
+        <article class="game-card p-8 group">
+          <div class="w-16 h-16 rounded-xl bg-gradient-to-br from-[var(--accent)] to-[#00c9c0] flex items-center justify-center mb-6">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--bg)" stroke-width="2.5">
+              <rect x="3" y="3" width="7" height="7" rx="1"/>
+              <rect x="14" y="3" width="7" height="7" rx="1"/>
+              <rect x="3" y="14" width="7" height="7" rx="1"/>
+              <rect x="14" y="14" width="7" height="7" rx="1"/>
+            </svg>
+          </div>
+          <h3 class="font-display text-xl font-bold mb-3">Block Blast</h3>
+          <p class="text-[var(--muted)] text-sm mb-6">
+            Strategic puzzle game. Place blocks on the grid, clear lines, and aim for the highest score.
+          </p>
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-[var(--accent)] font-medium">PUZZLE</span>
+            <button class="btn-primary text-sm" onclick="openGame('blockblast')" aria-label="Play Block Blast">
+              Play Now
+            </button>
+          </div>
+        </article>
+
+        <!-- Snake -->
+        <article class="game-card p-8 group">
+          <div class="w-16 h-16 rounded-xl bg-gradient-to-br from-[var(--accent-2)] to-[#ff8f5a] flex items-center justify-center mb-6">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--bg)" stroke-width="2.5">
+              <path d="M12 3c-1.5 0-3 1.5-3 3v12c0 1.5 1.5 3 3 3s3-1.5 3-3V6c0-1.5-1.5-3-3-3z"/>
+              <circle cx="9" cy="8" r="1" fill="var(--bg)"/>
+              <path d="M18 6c1.5 0 3 1.5 3 3v6c0 1.5-1.5 3-3 3"/>
+            </svg>
+          </div>
+          <h3 class="font-display text-xl font-bold mb-3">Snake</h3>
+          <p class="text-[var(--muted)] text-sm mb-6">
+            Classic arcade action. Guide the snake, eat food, grow longer, but don't hit yourself.
+          </p>
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-[var(--accent-2)] font-medium">ARCADE</span>
+            <button class="btn-primary text-sm" onclick="openGame('snake')" aria-label="Play Snake">
+              Play Now
+            </button>
+          </div>
+        </article>
+
+        <!-- Rock Paper Scissors -->
+        <article class="game-card p-8 group">
+          <div class="w-16 h-16 rounded-xl bg-gradient-to-br from-[var(--accent-3)] to-[#c084fc] flex items-center justify-center mb-6">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--bg)" stroke-width="2.5">
+              <circle cx="12" cy="8" r="4"/>
+              <path d="M12 12v4"/>
+              <path d="M8 20l4-4 4 4"/>
+            </svg>
+          </div>
+          <h3 class="font-display text-xl font-bold mb-3">Rock Paper Scissors</h3>
+          <p class="text-[var(--muted)] text-sm mb-6">
+            Timeless decision maker. Challenge the computer in this quick game of chance and strategy.
+          </p>
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-[var(--accent-3)] font-medium">CLASSIC</span>
+            <button class="btn-primary text-sm" onclick="openGame('rps')" aria-label="Play Rock Paper Scissors">
+              Play Now
+            </button>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="relative z-10 px-6 py-12 border-t border-[var(--border)]">
+    <div class="max-w-6xl mx-auto text-center">
+      <div class="font-display font-bold text-lg mb-2">ARCADE HUB</div>
+      <p class="text-[var(--muted)] text-sm">Built with passion for gaming</p>
+    </div>
+  </footer>
+
+  <!-- Game Modals -->
+  
+  <!-- Block Blast Modal -->
+  <div id="blockblast-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="blockblast-title">
+    <div class="modal-content">
+      <div class="flex items-center justify-between mb-6">
+        <h2 id="blockblast-title" class="font-display text-2xl font-bold">Block Blast</h2>
+        <button class="btn-secondary text-sm" onclick="closeGame('blockblast')" aria-label="Close game">Close</button>
+      </div>
+      
+      <div class="flex flex-col lg:flex-row gap-8 items-start">
+        <!-- Game Grid -->
+        <div>
+          <div class="score-display mb-4">Score: <span id="bb-score">0</span></div>
+          <div id="bb-grid" class="grid gap-0.5 p-2 bg-[var(--bg)] rounded-lg" style="grid-template-columns: repeat(8, 28px);">
+            <!-- Grid cells generated by JS -->
+          </div>
+        </div>
+        
+        <!-- Piece Selection -->
+        <div>
+          <div class="text-sm text-[var(--muted)] mb-3">Available Pieces</div>
+          <div id="bb-pieces" class="flex flex-col gap-4">
+            <!-- Pieces generated by JS -->
+          </div>
+          <button class="btn-secondary mt-6 text-sm" onclick="resetBlockBlast()">New Game</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Snake Modal -->
+  <div id="snake-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="snake-title">
+    <div class="modal-content">
+      <div class="flex items-center justify-between mb-6">
+        <h2 id="snake-title" class="font-display text-2xl font-bold">Snake</h2>
+        <button class="btn-secondary text-sm" onclick="closeGame('snake')" aria-label="Close game">Close</button>
+      </div>
+      
+      <div class="flex flex-col items-center">
+        <div class="score-display mb-4">Score: <span id="snake-score">0</span></div>
+        <canvas id="snake-canvas" class="game-canvas" width="400" height="400"></canvas>
+        <p class="text-[var(--muted)] text-sm mt-4">Use arrow keys or WASD to move</p>
+        
+        <!-- Mobile Controls -->
+        <div class="mt-4 grid grid-cols-3 gap-2 md:hidden">
+          <div></div>
+          <button class="btn-secondary p-4" onclick="setSnakeDirection('up')" aria-label="Up">↑</button>
+          <div></div>
+          <button class="btn-secondary p-4" onclick="setSnakeDirection('left')" aria-label="Left">←</button>
+          <button class="btn-secondary p-4" onclick="setSnakeDirection('down')" aria-label="Down">↓</button>
+          <button class="btn-secondary p-4" onclick="setSnakeDirection('right')" aria-label="Right">→</button>
+        </div>
+        
+        <button class="btn-primary mt-6" onclick="startSnake()">Start Game</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RPS Modal -->
+  <div id="rps-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="rps-title">
+    <div class="modal-content">
+      <div class="flex items-center justify-between mb-6">
+        <h2 id="rps-title" class="font-display text-2xl font-bold">Rock Paper Scissors</h2>
+        <button class="btn-secondary text-sm" onclick="closeGame('rps')" aria-label="Close game">Close</button>
+      </div>
+      
+      <div class="text-center">
+        <div class="flex justify-center gap-8 mb-8">
+          <div>
+            <div class="text-sm text-[var(--muted)] mb-2">You</div>
+            <div class="score-display" id="rps-player-score">0</div>
+          </div>
+          <div class="text-[var(--muted)] self-end pb-1">vs</div>
+          <div>
+            <div class="text-sm text-[var(--muted)] mb-2">Computer</div>
+            <div class="score-display text-[var(--accent-2)]" id="rps-computer-score">0</div>
+          </div>
+        </div>
+        
+        <div id="rps-result" class="text-2xl font-display mb-6 h-10"></div>
+        
+        <div class="flex justify-center gap-4 mb-6">
+          <button class="hand-btn" onclick="playRPS('rock')" data-choice="rock" aria-label="Choose Rock">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+              <circle cx="12" cy="12" r="5"/>
+            </svg>
+          </button>
+          <button class="hand-btn" onclick="playRPS('paper')" data-choice="paper" aria-label="Choose Paper">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
+              <rect x="4" y="4" width="16" height="16" rx="2"/>
+            </svg>
+          </button>
+          <button class="hand-btn" onclick="playRPS('scissors')" data-choice="scissors" aria-label="Choose Scissors">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2l3 9h-6l3-9zm0 20l-3-9h6l-3 9z"/>
+            </svg>
+          </button>
+        </div>
+        
+        <div class="text-sm text-[var(--muted)]">
+          <span>Rock beats Scissors | Scissors beats Paper | Paper beats Rock</span>
+        </div>
+        
+        <button class="btn-secondary mt-6 text-sm" onclick="resetRPS()">Reset Score</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ============ INITIALIZATION ============
+    // Initialize all state variables BEFORE any functions use them
+    
+    // Global stats
+    let totalPlays = 0;
+    let highScore = 0;
+
+    // Block Blast State
+    let bbScore = 0;
+    let bbGrid = [];
+    let bbPieces = [];
+    const GRID_SIZE = 8;
+    const COLORS = ['#00fff5', '#ff6b35', '#a855f7', '#22c55e', '#f59e0b'];
+
+    // Snake State
+    let snakeCanvas = null;
+    let snakeCtx = null;
+    let snake = [];
+    let snakeDirection = 'right';
+    let snakeNextDirection = 'right';
+    let snakeFood = { x: 0, y: 0 };
+    let snakeScore = 0;
+    let snakeGameLoop = null;
+    let snakeRunning = false;
+    const SNAKE_CELL = 20;
+    const SNAKE_GRID = 20;
+
+    // RPS State
+    let rpsPlayerScore = 0;
+    let rpsComputerScore = 0;
+
+    // ============ UTILITY FUNCTIONS ============
+    
+    function scrollToGames() {
+      document.getElementById('games').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function showLeaderboard() {
+      alert(`Total Games Played: ${totalPlays}\nHighest Score: ${highScore}`);
+    }
+
+    function updateStats() {
+      document.getElementById('totalPlays').textContent = totalPlays;
+      document.getElementById('highScore').textContent = highScore;
+    }
+
+    // ============ MODAL FUNCTIONS ============
+    
+    function openGame(game) {
+      const modal = document.getElementById(`${game}-modal`);
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      
+      if (game === 'blockblast') {
+        initBlockBlast();
+      } else if (game === 'snake') {
+        initSnake();
+      }
+      
+      totalPlays++;
+      updateStats();
+    }
+
+    function closeGame(game) {
+      const modal = document.getElementById(`${game}-modal`);
+      modal.classList.remove('active');
+      document.body.style.overflow = '';
+      
+      if (game === 'snake' && snakeGameLoop) {
+        cancelAnimationFrame(snakeGameLoop);
+        snakeRunning = false;
+      }
+    }
+
+    // Close modal on backdrop click
+    document.querySelectorAll('.modal').forEach(modal => {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.classList.remove('active');
+          document.body.style.overflow = '';
+          if (snakeGameLoop) {
+            cancelAnimationFrame(snakeGameLoop);
+            snakeRunning = false;
+          }
+        }
+      });
+    });
+
+    // Close on Escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal.active').forEach(modal => {
+          modal.classList.remove('active');
+          document.body.style.overflow = '';
+        });
+        if (snakeGameLoop) {
+          cancelAnimationFrame(snakeGameLoop);
+          snakeRunning = false;
+        }
+      }
+    });
+
+    // ============ BLOCK BLAST GAME ============
+    
+    const PIECES = [
+      { shape: [[1]], name: 'dot' },
+      { shape: [[1,1]], name: 'h2' },
+      { shape: [[1],[1]], name: 'v2' },
+      { shape: [[1,1,1]], name: 'h3' },
+      { shape: [[1],[1],[1]], name: 'v3' },
+      { shape: [[1,1],[1,1]], name: 'square' },
+      { shape: [[1,1,1],[1,0,0]], name: 'L1' },
+      { shape: [[1,0,0],[1,1,1]], name: 'L2' },
+      { shape: [[0,0,1],[1,1,1]], name: 'L3' },
+      { shape: [[1,1,1],[0,0,1]], name: 'L4' },
+      { shape: [[1,1,1],[0,1,0]], name: 'T' },
+      { shape: [[1,1,1,1,1]], name: 'h5' },
+      { shape: [[1],[1],[1],[1],[1]], name: 'v5' },
+    ];
+
+    function initBlockBlast() {
+      bbGrid = Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(null));
+      bbScore = 0;
+      document.getElementById('bb-score').textContent = '0';
+      generatePieces();
+      renderGrid();
+    }
+
+    function generatePieces() {
+      bbPieces = [];
+      for (let i = 0; i < 3; i++) {
+        const piece = PIECES[Math.floor(Math.random() * PIECES.length)];
+        const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+        bbPieces.push({ ...piece, color, id: i });
+      }
+      renderPieces();
+    }
+
+    function renderGrid() {
+      const gridEl = document.getElementById('bb-grid');
+      gridEl.innerHTML = '';
+      
+      for (let y = 0; y < GRID_SIZE; y++) {
+        for (let x = 0; x < GRID_SIZE; x++) {
+          const cell = document.createElement('div');
+          cell.className = 'block-cell';
+          cell.dataset.x = x;
+          cell.dataset.y = y;
+          
+          if (bbGrid[y][x]) {
+            cell.style.background = bbGrid[y][x];
+            cell.classList.add('filled');
+          }
+          
+          gridEl.appendChild(cell);
+        }
+      }
+    }
+
+    function renderPieces() {
+      const piecesEl = document.getElementById('bb-pieces');
+      piecesEl.innerHTML = '';
+      
+      bbPieces.forEach((piece, idx) => {
+        if (!piece) return;
+        
+        const pieceEl = document.createElement('div');
+        pieceEl.className = 'block-piece p-2 bg-[var(--bg)] rounded-lg';
+        pieceEl.style.cursor = 'pointer';
+        
+        const shapeGrid = document.createElement('div');
+        shapeGrid.className = 'grid gap-0.5';
+        shapeGrid.style.gridTemplateColumns = `repeat(${piece.shape[0].length}, 20px)`;
+        
+        piece.shape.forEach((row, py) => {
+          row.forEach((cell, px) => {
+            const cellEl = document.createElement('div');
+            cellEl.className = 'w-5 h-5 rounded-sm';
+            if (cell) {
+              cellEl.style.background = piece.color;
+            } else {
+              cellEl.style.background = 'transparent';
+            }
+            shapeGrid.appendChild(cellEl);
+          });
+        });
+        
+        pieceEl.appendChild(shapeGrid);
+        
+        pieceEl.addEventListener('click', () => selectPiece(idx));
+        pieceEl.addEventListener('mouseenter', () => previewPlacement(idx));
+        pieceEl.addEventListener('mouseleave', clearPreview);
+        
+        piecesEl.appendChild(pieceEl);
+      });
+    }
+
+    function selectPiece(idx) {
+      const piece = bbPieces[idx];
+      if (!piece) return;
+      
+      // Find best placement or first valid
+      for (let y = 0; y < GRID_SIZE; y++) {
+        for (let x = 0; x < GRID_SIZE; x++) {
+          if (canPlace(piece.shape, x, y)) {
+            placePiece(piece, x, y);
+            bbPieces[idx] = null;
+            checkAndClearLines();
+            renderGrid();
+            renderPieces();
+            
+            // Check if no more moves
+            if (!hasValidMoves()) {
+              setTimeout(() => {
+                alert(`Game Over! Score: ${bbScore}`);
+                resetBlockBlast();
+              }, 300);
+            } else if (bbPieces.filter(p => p).length === 0) {
+              generatePieces();
+            }
+            return;
+          }
+        }
+      }
+    }
+
+    function canPlace(shape, startX, startY) {
+      for (let y = 0; y < shape.length; y++) {
+        for (let x = 0; x < shape[y].length; x++) {
+          if (shape[y][x]) {
+            const gridX = startX + x;
+            const gridY = startY + y;
+            if (gridX >= GRID_SIZE || gridY >= GRID_SIZE || 
+                gridX < 0 || gridY < 0 ||
+                bbGrid[gridY][gridX]) {
+              return false;
+            }
+          }
+        }
+      }
+      return true;
+    }
+
+    function placePiece(piece, startX, startY) {
+      piece.shape.forEach((row, y) => {
+        row.forEach((cell, x) => {
+          if (cell) {
+            bbGrid[startY + y][startX + x] = piece.color;
+          }
+        });
+      });
+      
+      const cellsPlaced = piece.shape.flat().filter(c => c).length;
+      bbScore += cellsPlaced;
+      document.getElementById('bb-score').textContent = bbScore;
+      
+      if (bbScore > highScore) {
+        highScore = bbScore;
+        updateStats();
+      }
+    }
+
+    function previewPlacement(idx) {
+      const piece = bbPieces[idx];
+      if (!piece) return;
+      
+      clearPreview();
+      
+      // Find first valid placement
+      for (let y = 0; y < GRID_SIZE; y++) {
+        for (let x = 0; x < GRID_SIZE; x++) {
+          if (canPlace(piece.shape, x, y)) {
+            piece.shape.forEach((row, py) => {
+              row.forEach((cell, px) => {
+                if (cell) {
+                  const cellEl = document.querySelector(`[data-x="${x + px}"][data-y="${y + py}"]`);
+                  if (cellEl) {
+                    cellEl.style.background = piece.color;
+                    cellEl.style.opacity = '0.5';
+                  }
+                }
+              });
+            });
+            return;
+          }
+        }
+      }
+    }
+
+    function clearPreview() {
+      document.querySelectorAll('.block-cell').forEach(cell => {
+        const x = parseInt(cell.dataset.x);
+        const y = parseInt(cell.dataset.y);
+        if (bbGrid[y][x]) {
+          cell.style.background = bbGrid[y][x];
+          cell.style.opacity = '1';
+        } else {
+          cell.style.background = '';
+          cell.style.opacity = '1';
+        }
+      });
+    }
+
+    function checkAndClearLines() {
+      let linesCleared = 0;
+      
+      // Check rows
+      for (let y = 0; y < GRID_SIZE; y++) {
+        if (bbGrid[y].every(cell => cell !== null)) {
+          bbGrid[y] = Array(GRID_SIZE).fill(null);
+          linesCleared++;
+        }
+      }
+      
+      // Check columns
+      for (let x = 0; x < GRID_SIZE; x++) {
+        if (bbGrid.every(row => row[x] !== null)) {
+          for (let y = 0; y < GRID_SIZE; y++) {
+            bbGrid[y][x] = null;
+          }
+          linesCleared++;
+        }
+      }
+      
+      if (linesCleared > 0) {
+        bbScore += linesCleared * 10;
+        document.getElementById('bb-score').textContent = bbScore;
+      }
+    }
+
+    function hasValidMoves() {
+      const remaining = bbPieces.filter(p => p);
+      if (remaining.length === 0) return true;
+      
+      for (const piece of remaining) {
+        for (let y = 0; y < GRID_SIZE; y++) {
+          for (let x = 0; x < GRID_SIZE; x++) {
+            if (canPlace(piece.shape, x, y)) {
+              return true;
+            }
+          }
+        }
+      }
+      return false;
+    }
+
+    function resetBlockBlast() {
+      initBlockBlast();
+    }
+
+    // ============ SNAKE GAME ============
+    
+    function initSnake() {
+      snakeCanvas = document.getElementById('snake-canvas');
+      snakeCtx = snakeCanvas.getContext('2d');
+      snake = [{x: 10, y: 10}];
+      snakeDirection = 'right';
+      snakeNextDirection = 'right';
+      snakeScore = 0;
+      snakeRunning = false;
+      document.getElementById('snake-score').textContent = '0';
+      spawnFood();
+      drawSnake();
+    }
+
+    function startSnake() {
+      if (snakeRunning) {
+        snake = [{x: 10, y: 10}];
+        snakeDirection = 'right';
+        snakeNextDirection = 'right';
+        snakeScore = 0;
+        document.getElementById('snake-score').textContent = '0';
+        spawnFood();
+      }
+      snakeRunning = true;
+      gameLoop();
+    }
+
+    function spawnFood() {
+      let valid = false;
+      while (!valid) {
+        snakeFood = {
+          x: Math.floor(Math.random() * SNAKE_GRID),
+          y: Math.floor(Math.random() * SNAKE_GRID)
+        };
+        valid = !snake.some(seg => seg.x === snakeFood.x && seg.y === snakeFood.y);
+      }
+    }
+
+    function gameLoop() {
+      if (!snakeRunning) return;
+      
+      setTimeout(() => {
+        updateSnake();
+        drawSnake();
+        if (snakeRunning) {
+          gameLoop();
+        }
+      }, 100);
+    }
+
+    function updateSnake() {
+      snakeDirection = snakeNextDirection;
+      
+      const head = { ...snake[0] };
+      
+      switch (snakeDirection) {
+        case 'up': head.y--; break;
+        case 'down': head.y++; break;
+        case 'left': head.x--; break;
+        case 'right': head.x++; break;
+      }
+      
+      // Wall collision
+      if (head.x < 0 || head.x >= SNAKE_GRID || head.y < 0 || head.y >= SNAKE_GRID) {
+        gameOver();
+        return;
+      }
+      
+      // Self collision
+      if (snake.some(seg => seg.x === head.x && seg.y === head.y)) {
+        gameOver();
+        return;
+      }
+      
+      snake.unshift(head);
+      
+      // Food collision
+      if (head.x === snakeFood.x && head.y === snakeFood.y) {
+        snakeScore += 10;
+        document.getElementById('snake-score').textContent = snakeScore;
+        if (snakeScore > highScore) {
+          highScore = snakeScore;
+          updateStats();
+        }
+        spawnFood();
+      } else {
+        snake.pop();
+      }
+    }
+
+    function drawSnake() {
+      if (!snakeCtx) return;
+      
+      // Clear canvas
+      snakeCtx.fillStyle = '#0a0d12';
+      snakeCtx.fillRect(0, 0, snakeCanvas.width, snakeCanvas.height);
+      
+      // Draw grid lines
+      snakeCtx.strokeStyle = 'rgba(0, 255, 245, 0.05)';
+      snakeCtx.lineWidth = 1;
+      for (let i = 0; i <= SNAKE_GRID; i++) {
+        snakeCtx.beginPath();
+        snakeCtx.moveTo(i * SNAKE_CELL, 0);
+        snakeCtx.lineTo(i * SNAKE_CELL, snakeCanvas.height);
+        snakeCtx.stroke();
+        snakeCtx.beginPath();
+        snakeCtx.moveTo(0, i * SNAKE_CELL);
+        snakeCtx.lineTo(snakeCanvas.width, i * SNAKE_CELL);
+        snakeCtx.stroke();
+      }
+      
+      // Draw snake
+      snake.forEach((seg, idx) => {
+        const gradient = snakeCtx.createRadialGradient(
+          seg.x * SNAKE_CELL + SNAKE_CELL/2,
+          seg.y * SNAKE_CELL + SNAKE_CELL/2,
+          0,
+          seg.x * SNAKE_CELL + SNAKE_CELL/2,
+          seg.y * SNAKE_CELL + SNAKE_CELL/2,
+          SNAKE_CELL/2
+        );
+        gradient.addColorStop(0, '#00fff5');
+        gradient.addColorStop(1, '#00c9c0');
+        
+        snakeCtx.fillStyle = gradient;
+        snakeCtx.fillRect(
+          seg.x * SNAKE_CELL + 1,
+          seg.y * SNAKE_CELL + 1,
+          SNAKE_CELL - 2,
+          SNAKE_CELL - 2
+        );
+      });
+      
+      // Draw food
+      const foodGradient = snakeCtx.createRadialGradient(
+        snakeFood.x * SNAKE_CELL + SNAKE_CELL/2,
+        snakeFood.y * SNAKE_CELL + SNAKE_CELL/2,
+        0,
+        snakeFood.x * SNAKE_CELL + SNAKE_CELL/2,
+        snakeFood.y * SNAKE_CELL + SNAKE_CELL/2,
+        SNAKE_CELL/2
+      );
+      foodGradient.addColorStop(0, '#ff6b35');
+      foodGradient.addColorStop(1, '#ff8f5a');
+      
+      snakeCtx.fillStyle = foodGradient;
+      snakeCtx.beginPath();
+      snakeCtx.arc(
+        snakeFood.x * SNAKE_CELL + SNAKE_CELL/2,
+        snakeFood.y * SNAKE_CELL + SNAKE_CELL/2,
+        SNAKE_CELL/2 - 2,
+        0,
+        Math.PI * 2
+      );
+      snakeCtx.fill();
+    }
+
+    function setSnakeDirection(dir) {
+      const opposites = { up: 'down', down: 'up', left: 'right', right: 'left' };
+      if (opposites[dir] !== snakeDirection) {
+        snakeNextDirection = dir;
+      }
+    }
+
+    function gameOver() {
+      snakeRunning = false;
+      setTimeout(() => {
+        alert(`Game Over! Score: ${snakeScore}`);
+      }, 100);
+    }
+
+    // Keyboard controls
+    document.addEventListener('keydown', (e) => {
+      const keys = {
+        'ArrowUp': 'up', 'KeyW': 'up',
+        'ArrowDown': 'down', 'KeyS': 'down',
+        'ArrowLeft': 'left', 'KeyA': 'left',
+        'ArrowRight': 'right', 'KeyD': 'right'
+      };
+      
+      if (keys[e.code] && document.getElementById('snake-modal').classList.contains('active')) {
+        e.preventDefault();
+        setSnakeDirection(keys[e.code]);
+      }
+    });
+
+    // ============ ROCK PAPER SCISSORS ============
+    
+    const RPS_CHOICES = ['rock', 'paper', 'scissors'];
+    
+    function playRPS(playerChoice) {
+      const computerChoice = RPS_CHOICES[Math.floor(Math.random() * 3)];
+      
+      // Clear previous selection
+      document.querySelectorAll('.hand-btn').forEach(btn => {
+        btn.classList.remove('selected');
+      });
+      
+      // Show selection
+      document.querySelector(`[data-choice="${playerChoice}"]`).classList.add('selected');
+      
+      // Determine winner
+      let result;
+      if (playerChoice === computerChoice) {
+        result = "It's a tie!";
+      } else if (
+        (playerChoice === 'rock' && computerChoice === 'scissors') ||
+        (playerChoice === 'paper' && computerChoice === 'rock') ||
+        (playerChoice === 'scissors' && computerChoice === 'paper')
+      ) {
+        result = 'You win!';
+        rpsPlayerScore++;
+      } else {
+        result = 'Computer wins!';
+        rpsComputerScore++;
+      }
+      
+      // Update UI
+      document.getElementById('rps-player-score').textContent = rpsPlayerScore;
+      document.getElementById('rps-computer-score').textContent = rpsComputerScore;
+      
+      const resultEl = document.getElementById('rps-result');
+      resultEl.textContent = `${result} Computer chose ${computerChoice}`;
+      resultEl.style.color = result === 'You win!' ? 'var(--accent)' : 
+                            result === 'Computer wins!' ? 'var(--accent-2)' : 'var(--muted)';
+      
+      totalPlays++;
+      updateStats();
+    }
+
+    function resetRPS() {
+      rpsPlayerScore = 0;
+      rpsComputerScore = 0;
+      document.getElementById('rps-player-score').textContent = '0';
+      document.getElementById('rps-computer-score').textContent = '0';
+      document.getElementById('rps-result').textContent = '';
+      document.querySelectorAll('.hand-btn').forEach(btn => {
+        btn.classList.remove('selected');
+      });
+    }
+
+    // ============ SCROLL ANIMATIONS ============
+    
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, observerOptions);
+
+    document.querySelectorAll('.game-card').forEach((card, idx) => {
+      card.style.opacity = '0';
+      card.style.transform = 'translateY(30px)';
+      card.style.transition = `all 0.6s ease ${idx * 0.15}s`;
+      observer.observe(card);
+    });
+
+    // Initialize stats on load
+    updateStats();
+  </script>
+</body>
+</html>
